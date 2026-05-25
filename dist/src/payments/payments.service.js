@@ -1,0 +1,231 @@
+"use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.PaymentsService = void 0;
+const common_1 = require("@nestjs/common");
+const prisma_service_1 = require("../prisma/prisma.service");
+let PaymentsService = class PaymentsService {
+    prisma;
+    constructor(prisma) {
+        this.prisma = prisma;
+    }
+    async create(userId, createPaymentDto) {
+        const { leaseId, tenantId, amount, dueDate, method, reference, notes } = createPaymentDto;
+        const payment = await this.prisma.payment.create({
+            data: {
+                leaseId,
+                tenantId,
+                amount,
+                dueDate: new Date(dueDate),
+                method: method,
+                reference,
+                notes,
+                status: 'PENDING',
+            },
+            include: {
+                lease: {
+                    include: {
+                        unit: {
+                            include: {
+                                property: true,
+                            },
+                        },
+                    },
+                },
+                tenant: {
+                    include: {
+                        user: true,
+                    },
+                },
+            },
+        });
+        return payment;
+    }
+    async findAll(userId) {
+        const payments = await this.prisma.payment.findMany({
+            include: {
+                lease: {
+                    include: {
+                        unit: {
+                            include: {
+                                property: true,
+                            },
+                        },
+                    },
+                },
+                tenant: {
+                    include: {
+                        user: true,
+                    },
+                },
+            },
+            orderBy: {
+                dueDate: 'desc',
+            },
+        });
+        return payments;
+    }
+    async findOne(id) {
+        const payment = await this.prisma.payment.findUnique({
+            where: { id },
+            include: {
+                lease: {
+                    include: {
+                        unit: {
+                            include: {
+                                property: true,
+                            },
+                        },
+                    },
+                },
+                tenant: {
+                    include: {
+                        user: true,
+                    },
+                },
+            },
+        });
+        if (!payment) {
+            throw new common_1.NotFoundException('Payment not found');
+        }
+        return payment;
+    }
+    async update(id, updatePaymentDto) {
+        const payment = await this.prisma.payment.findUnique({
+            where: { id },
+        });
+        if (!payment) {
+            throw new common_1.NotFoundException('Payment not found');
+        }
+        const updated = await this.prisma.payment.update({
+            where: { id },
+            data: {
+                amount: updatePaymentDto.amount,
+                dueDate: updatePaymentDto.dueDate ? new Date(updatePaymentDto.dueDate) : undefined,
+                paidDate: updatePaymentDto.paidDate ? new Date(updatePaymentDto.paidDate) : undefined,
+                status: updatePaymentDto.status,
+                method: updatePaymentDto.method,
+                reference: updatePaymentDto.reference,
+                notes: updatePaymentDto.notes,
+            },
+            include: {
+                lease: {
+                    include: {
+                        unit: {
+                            include: {
+                                property: true,
+                            },
+                        },
+                    },
+                },
+                tenant: {
+                    include: {
+                        user: true,
+                    },
+                },
+            },
+        });
+        return updated;
+    }
+    async recordPayment(id, method, reference) {
+        const payment = await this.prisma.payment.findUnique({
+            where: { id },
+        });
+        if (!payment) {
+            throw new common_1.NotFoundException('Payment not found');
+        }
+        const updated = await this.prisma.payment.update({
+            where: { id },
+            data: {
+                status: 'PAID',
+                paidDate: new Date(),
+                method: method,
+                reference,
+            },
+            include: {
+                lease: {
+                    include: {
+                        unit: {
+                            include: {
+                                property: true,
+                            },
+                        },
+                    },
+                },
+                tenant: {
+                    include: {
+                        user: true,
+                    },
+                },
+            },
+        });
+        return updated;
+    }
+    async getOverduePayments(userId) {
+        const today = new Date();
+        const overduePayments = await this.prisma.payment.findMany({
+            where: {
+                status: {
+                    in: ['PENDING', 'OVERDUE'],
+                },
+                dueDate: {
+                    lt: today,
+                },
+            },
+            include: {
+                lease: {
+                    include: {
+                        unit: {
+                            include: {
+                                property: true,
+                            },
+                        },
+                    },
+                },
+                tenant: {
+                    include: {
+                        user: true,
+                    },
+                },
+            },
+            orderBy: {
+                dueDate: 'asc',
+            },
+        });
+        for (const payment of overduePayments) {
+            if (payment.status === 'PENDING') {
+                await this.prisma.payment.update({
+                    where: { id: payment.id },
+                    data: { status: 'OVERDUE' },
+                });
+            }
+        }
+        return overduePayments;
+    }
+    async remove(id) {
+        const payment = await this.prisma.payment.findUnique({
+            where: { id },
+        });
+        if (!payment) {
+            throw new common_1.NotFoundException('Payment not found');
+        }
+        await this.prisma.payment.delete({
+            where: { id },
+        });
+        return { message: 'Payment deleted successfully' };
+    }
+};
+exports.PaymentsService = PaymentsService;
+exports.PaymentsService = PaymentsService = __decorate([
+    (0, common_1.Injectable)(),
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+], PaymentsService);
+//# sourceMappingURL=payments.service.js.map
