@@ -6,7 +6,12 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   
   app.enableCors({
-    origin: ['http://localhost:3000', 'http://localhost:3001'],
+    origin: [
+      'http://localhost:3000',
+      'http://localhost:3001',
+      'https://smartrent-fe-blush.vercel.app',
+      process.env.FRONTEND_URL,
+    ].filter(Boolean),
     credentials: true,
   });
   
