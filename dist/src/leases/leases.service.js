@@ -34,32 +34,35 @@ let LeasesService = class LeasesService {
         if (!tenant) {
             throw new common_1.NotFoundException('Tenant not found');
         }
-        const lease = await this.prisma.lease.create({
-            data: {
-                tenantId,
-                unitId,
-                startDate: new Date(startDate),
-                endDate: new Date(endDate),
-                rentAmount,
-                deposit,
-                isActive: true,
-            },
-            include: {
-                tenant: {
-                    include: {
-                        user: true,
+        const lease = await this.prisma.$transaction(async (tx) => {
+            const createdLease = await tx.lease.create({
+                data: {
+                    tenantId,
+                    unitId,
+                    startDate: new Date(startDate),
+                    endDate: new Date(endDate),
+                    rentAmount,
+                    deposit,
+                    isActive: true,
+                },
+                include: {
+                    tenant: {
+                        include: {
+                            user: true,
+                        },
+                    },
+                    unit: {
+                        include: {
+                            property: true,
+                        },
                     },
                 },
-                unit: {
-                    include: {
-                        property: true,
-                    },
-                },
-            },
-        });
-        await this.prisma.unit.update({
-            where: { id: unitId },
-            data: { status: 'OCCUPIED' },
+            });
+            await tx.unit.update({
+                where: { id: unitId },
+                data: { status: 'OCCUPIED' },
+            });
+            return createdLease;
         });
         return lease;
     }
@@ -121,8 +124,12 @@ let LeasesService = class LeasesService {
             where: { id },
             data: {
                 ...updateLeaseDto,
-                startDate: updateLeaseDto.startDate ? new Date(updateLeaseDto.startDate) : undefined,
-                endDate: updateLeaseDto.endDate ? new Date(updateLeaseDto.endDate) : undefined,
+                startDate: updateLeaseDto.startDate
+                    ? new Date(updateLeaseDto.startDate)
+                    : undefined,
+                endDate: updateLeaseDto.endDate
+                    ? new Date(updateLeaseDto.endDate)
+                    : undefined,
             },
             include: {
                 tenant: {

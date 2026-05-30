@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateLeaseDto } from './dto/create-lease.dto';
 import { UpdateLeaseDto } from './dto/update-lease.dto';
@@ -8,7 +12,8 @@ export class LeasesService {
   constructor(private prisma: PrismaService) {}
 
   async create(userId: string, createLeaseDto: CreateLeaseDto) {
-    const { tenantId, unitId, startDate, endDate, rentAmount, deposit } = createLeaseDto;
+    const { tenantId, unitId, startDate, endDate, rentAmount, deposit } =
+      createLeaseDto;
 
     // Check if unit exists and is vacant
     const unit = await this.prisma.unit.findUnique({
@@ -32,35 +37,38 @@ export class LeasesService {
       throw new NotFoundException('Tenant not found');
     }
 
-    // Create lease and update unit status
-    const lease = await this.prisma.lease.create({
-      data: {
-        tenantId,
-        unitId,
-        startDate: new Date(startDate),
-        endDate: new Date(endDate),
-        rentAmount,
-        deposit,
-        isActive: true,
-      },
-      include: {
-        tenant: {
-          include: {
-            user: true,
+    // Create lease and update unit status atomically
+    const lease = await this.prisma.$transaction(async (tx) => {
+      const createdLease = await tx.lease.create({
+        data: {
+          tenantId,
+          unitId,
+          startDate: new Date(startDate),
+          endDate: new Date(endDate),
+          rentAmount,
+          deposit,
+          isActive: true,
+        },
+        include: {
+          tenant: {
+            include: {
+              user: true,
+            },
+          },
+          unit: {
+            include: {
+              property: true,
+            },
           },
         },
-        unit: {
-          include: {
-            property: true,
-          },
-        },
-      },
-    });
+      });
 
-    // Update unit status to OCCUPIED
-    await this.prisma.unit.update({
-      where: { id: unitId },
-      data: { status: 'OCCUPIED' },
+      await tx.unit.update({
+        where: { id: unitId },
+        data: { status: 'OCCUPIED' },
+      });
+
+      return createdLease;
     });
 
     return lease;
@@ -131,8 +139,12 @@ export class LeasesService {
       where: { id },
       data: {
         ...updateLeaseDto,
-        startDate: updateLeaseDto.startDate ? new Date(updateLeaseDto.startDate) : undefined,
-        endDate: updateLeaseDto.endDate ? new Date(updateLeaseDto.endDate) : undefined,
+        startDate: updateLeaseDto.startDate
+          ? new Date(updateLeaseDto.startDate)
+          : undefined,
+        endDate: updateLeaseDto.endDate
+          ? new Date(updateLeaseDto.endDate)
+          : undefined,
       },
       include: {
         tenant: {

@@ -41,4 +41,10 @@ export class TenantsController {
   remove(@Param('id') id: string) {
     return this.tenantsService.remove(id);
   }
+
+  @Delete('user/:userId')
+  @Roles('LANDLORD', 'PROPERTY_MANAGER', 'ADMIN')
+  removeByUserId(@Param('userId') userId: string) {
+    return this.tenantsService.removeByUserId(userId);
+  }
 }

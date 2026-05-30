@@ -163,6 +163,46 @@ let PropertiesService = class PropertiesService {
             },
         });
     }
+    async getUnitById(unitId, userId) {
+        const unit = await this.prisma.unit.findUnique({
+            where: { id: unitId },
+            include: {
+                property: true,
+                leases: {
+                    include: {
+                        tenant: {
+                            include: {
+                                user: {
+                                    select: {
+                                        id: true,
+                                        fullName: true,
+                                        email: true,
+                                        phone: true,
+                                    },
+                                },
+                            },
+                        },
+                        payments: {
+                            orderBy: { dueDate: 'desc' },
+                            take: 10,
+                        },
+                    },
+                    orderBy: { createdAt: 'desc' },
+                },
+                maintenanceRequests: {
+                    orderBy: { reportedAt: 'desc' },
+                    take: 5,
+                },
+            },
+        });
+        if (!unit) {
+            throw new common_1.NotFoundException('Unit not found');
+        }
+        if (unit.property.ownerId !== userId) {
+            throw new common_1.ForbiddenException('Access denied');
+        }
+        return unit;
+    }
 };
 exports.PropertiesService = PropertiesService;
 exports.PropertiesService = PropertiesService = __decorate([

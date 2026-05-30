@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+} from '@nestjs/common';
 import { PaymentsService } from './payments.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
@@ -30,6 +39,12 @@ export class PaymentsController {
     return this.paymentsService.getOverduePayments(user.id);
   }
 
+  @Get('tenant/:tenantId')
+  @Roles('LANDLORD', 'PROPERTY_MANAGER', 'ADMIN')
+  findByTenant(@Param('tenantId') tenantId: string) {
+    return this.paymentsService.findByTenantId(tenantId);
+  }
+
   @Get(':id')
   @Roles('LANDLORD', 'PROPERTY_MANAGER', 'ADMIN', 'TENANT')
   findOne(@Param('id') id: string) {
@@ -46,9 +61,14 @@ export class PaymentsController {
   @Roles('LANDLORD', 'PROPERTY_MANAGER', 'ADMIN')
   recordPayment(
     @Param('id') id: string,
-    @Body() body: { method: string; reference?: string },
+    @Body() body: { method: string; reference?: string; notes?: string },
   ) {
-    return this.paymentsService.recordPayment(id, body.method, body.reference);
+    return this.paymentsService.recordPayment(
+      id,
+      body.method,
+      body.reference,
+      body.notes,
+    );
   }
 
   @Delete(':id')

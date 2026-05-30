@@ -18,7 +18,13 @@ let TenantsService = class TenantsService {
         this.prisma = prisma;
     }
     async create(userId, createTenantDto) {
-        const { email, password, fullName, phone, nationalId, emergencyContact, occupation } = createTenantDto;
+        const { email, password, fullName, phone, nationalId, emergencyContact, occupation, } = createTenantDto;
+        const existingUser = await this.prisma.user.findUnique({
+            where: { email },
+        });
+        if (existingUser) {
+            throw new common_1.ConflictException('A user with this email already exists');
+        }
         const bcrypt = require('bcrypt');
         const hashedPassword = await bcrypt.hash(password, 10);
         const user = await this.prisma.user.create({
@@ -43,37 +49,104 @@ let TenantsService = class TenantsService {
         return user;
     }
     async findAll(userId) {
-        const tenants = await this.prisma.tenant.findMany({
-            include: {
-                user: {
-                    select: {
-                        id: true,
-                        email: true,
-                        fullName: true,
-                        phone: true,
-                        createdAt: true,
-                    },
-                },
-                leases: {
-                    include: {
-                        unit: {
-                            include: {
-                                property: true,
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+        });
+        if (!user) {
+            throw new common_1.NotFoundException('User not found');
+        }
+        let tenants;
+        if (user.role === 'LANDLORD' || user.role === 'PROPERTY_MANAGER') {
+            tenants = await this.prisma.tenant.findMany({
+                where: {
+                    leases: {
+                        some: {
+                            unit: {
+                                property: {
+                                    ownerId: userId,
+                                },
                             },
                         },
                     },
-                    where: {
-                        isActive: true,
+                },
+                include: {
+                    user: {
+                        select: {
+                            id: true,
+                            email: true,
+                            fullName: true,
+                            phone: true,
+                            createdAt: true,
+                        },
+                    },
+                    leases: {
+                        include: {
+                            unit: {
+                                include: {
+                                    property: true,
+                                },
+                            },
+                        },
+                        where: {
+                            isActive: true,
+                            unit: {
+                                property: {
+                                    ownerId: userId,
+                                },
+                            },
+                        },
+                    },
+                    payments: {
+                        where: {
+                            lease: {
+                                unit: {
+                                    property: {
+                                        ownerId: userId,
+                                    },
+                                },
+                            },
+                        },
+                        orderBy: {
+                            dueDate: 'desc',
+                        },
+                        take: 5,
                     },
                 },
-                payments: {
-                    orderBy: {
-                        dueDate: 'desc',
+            });
+        }
+        else {
+            tenants = await this.prisma.tenant.findMany({
+                include: {
+                    user: {
+                        select: {
+                            id: true,
+                            email: true,
+                            fullName: true,
+                            phone: true,
+                            createdAt: true,
+                        },
                     },
-                    take: 5,
+                    leases: {
+                        include: {
+                            unit: {
+                                include: {
+                                    property: true,
+                                },
+                            },
+                        },
+                        where: {
+                            isActive: true,
+                        },
+                    },
+                    payments: {
+                        orderBy: {
+                            dueDate: 'desc',
+                        },
+                        take: 5,
+                    },
                 },
-            },
-        });
+            });
+        }
         return tenants;
     }
     async findOne(id) {
@@ -154,6 +227,14 @@ let TenantsService = class TenantsService {
             where: { id },
         });
         return { message: 'Tenant deleted successfully' };
+    }
+    async removeByUserId(userId) {
+        const user = await this.prisma.user.findUnique({ where: { id: userId } });
+        if (!user) {
+            return { message: 'User not found, nothing to rollback' };
+        }
+        await this.prisma.user.delete({ where: { id: userId } });
+        return { message: 'Rollback successful — user and tenant profile removed' };
     }
 };
 exports.TenantsService = TenantsService;

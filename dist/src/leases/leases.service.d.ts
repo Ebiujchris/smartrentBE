@@ -52,8 +52,8 @@ export declare class LeasesService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        rentAmount: import("@prisma/client-runtime-utils").Decimal;
         isActive: boolean;
+        rentAmount: import("@prisma/client-runtime-utils").Decimal;
         tenantId: string;
         unitId: string;
         startDate: Date;
@@ -113,17 +113,17 @@ export declare class LeasesService {
             dueDate: Date;
             tenantId: string;
             leaseId: string;
+            paidDate: Date | null;
             method: import("@prisma/client").$Enums.PaymentMethod | null;
             reference: string | null;
             notes: string | null;
-            paidDate: Date | null;
         }[];
     } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        rentAmount: import("@prisma/client-runtime-utils").Decimal;
         isActive: boolean;
+        rentAmount: import("@prisma/client-runtime-utils").Decimal;
         tenantId: string;
         unitId: string;
         startDate: Date;
@@ -183,17 +183,17 @@ export declare class LeasesService {
             dueDate: Date;
             tenantId: string;
             leaseId: string;
+            paidDate: Date | null;
             method: import("@prisma/client").$Enums.PaymentMethod | null;
             reference: string | null;
             notes: string | null;
-            paidDate: Date | null;
         }[];
     } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        rentAmount: import("@prisma/client-runtime-utils").Decimal;
         isActive: boolean;
+        rentAmount: import("@prisma/client-runtime-utils").Decimal;
         tenantId: string;
         unitId: string;
         startDate: Date;
@@ -248,8 +248,8 @@ export declare class LeasesService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        rentAmount: import("@prisma/client-runtime-utils").Decimal;
         isActive: boolean;
+        rentAmount: import("@prisma/client-runtime-utils").Decimal;
         tenantId: string;
         unitId: string;
         startDate: Date;
@@ -260,8 +260,8 @@ export declare class LeasesService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        rentAmount: import("@prisma/client-runtime-utils").Decimal;
         isActive: boolean;
+        rentAmount: import("@prisma/client-runtime-utils").Decimal;
         tenantId: string;
         unitId: string;
         startDate: Date;

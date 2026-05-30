@@ -7,6 +7,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 enum UserRole {
@@ -72,16 +73,16 @@ model User {
   fullName  String
   phone     String?
   role      UserRole @default(LANDLORD)
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   // Relations
   subscription    Subscription?
   properties      Property[]
   tenantProfile   Tenant?
   notifications   Notification[]
-  
+
   @@map("users")
 }
 
@@ -89,21 +90,21 @@ model Subscription {
   id        String             @id @default(cuid())
   userId    String             @unique
   user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
   plan      SubscriptionPlan   @default(STARTER)
   status    SubscriptionStatus @default(TRIAL)
-  
+
   maxUnits  Int                @default(10)
-  
+
   trialEndsAt     DateTime?
   currentPeriodStart DateTime @default(now())
   currentPeriodEnd   DateTime
-  
+
   amount    Decimal  @db.Decimal(10, 2)
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   @@map("subscriptions")
 }
 
@@ -112,16 +113,16 @@ model Property {
   name        String
   address     String
   description String?
-  
+
   ownerId     String
   owner       User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  
+
   // Relations
   units       Unit[]
-  
+
   @@map("properties")
 }
 
@@ -134,17 +135,18 @@ model Unit {
   size        String?
   rentAmount  Decimal    @db.Decimal(10, 2)
   status      UnitStatus @default(VACANT)
-  
+
   propertyId  String
   property    Property   @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  
+
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
-  
+
   // Relations
   leases      Lease[]
   maintenanceRequests MaintenanceRequest[]
-  
+  vacantListing VacantListing?
+
   @@unique([propertyId, unitNumber])
   @@map("units")
 }
@@ -153,110 +155,141 @@ model Tenant {
   id              String   @id @default(cuid())
   userId          String   @unique
   user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
   nationalId      String?
   emergencyContact String?
   occupation      String?
-  
+
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
-  
+
   // Relations
   leases          Lease[]
   payments        Payment[]
   maintenanceRequests MaintenanceRequest[]
-  
+
   @@map("tenants")
 }
 
 model Lease {
   id          String   @id @default(cuid())
-  
+
   tenantId    String
   tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  
+
   unitId      String
   unit        Unit     @relation(fields: [unitId], references: [id], onDelete: Cascade)
-  
+
   startDate   DateTime
   endDate     DateTime
   rentAmount  Decimal  @db.Decimal(10, 2)
   deposit     Decimal  @db.Decimal(10, 2)
-  
+
   isActive    Boolean  @default(true)
-  
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  
+
   // Relations
   payments    Payment[]
-  
+
   @@map("leases")
 }
 
 model Payment {
   id          String        @id @default(cuid())
-  
+
   leaseId     String
   lease       Lease         @relation(fields: [leaseId], references: [id], onDelete: Cascade)
-  
+
   tenantId    String
   tenant      Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  
+
   amount      Decimal       @db.Decimal(10, 2)
   dueDate     DateTime
   paidDate    DateTime?
-  
+
   status      PaymentStatus @default(PENDING)
   method      PaymentMethod?
-  
+
   reference   String?
   notes       String?
-  
+
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
-  
+
   @@map("payments")
 }
 
 model MaintenanceRequest {
   id          String              @id @default(cuid())
-  
+
   unitId      String
   unit        Unit                @relation(fields: [unitId], references: [id], onDelete: Cascade)
-  
+
   tenantId    String
   tenant      Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  
+
   title       String
   description String
   priority    MaintenancePriority @default(MEDIUM)
   status      MaintenanceStatus   @default(PENDING)
-  
+
   reportedAt  DateTime            @default(now())
   resolvedAt  DateTime?
-  
+
   notes       String?
-  
+
   createdAt   DateTime            @default(now())
   updatedAt   DateTime            @updatedAt
-  
+
   @@map("maintenance_requests")
 }
 
 model Notification {
   id        String   @id @default(cuid())
-  
+
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
   title     String
   message   String
   type      String
-  
+
   isRead    Boolean  @default(false)
-  
+
   createdAt DateTime @default(now())
-  
+
   @@map("notifications")
+}
+
+model VacantListing {
+  id              String   @id @default(cuid())
+
+  unitId          String   @unique
+  unit            Unit     @relation(fields: [unitId], references: [id], onDelete: Cascade)
+
+  title           String
+  description     String
+  highlights      String[] // Array of key features/highlights
+
+  // Contact information
+  contactName     String
+  contactPhone    String
+  contactEmail    String?
+
+  // Images
+  images          String[] // Array of image URLs
+
+  // Availability
+  availableFrom   DateTime @default(now())
+  isActive        Boolean  @default(true)
+
+  // View tracking
+  viewCount       Int      @default(0)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("vacant_listings")
 }

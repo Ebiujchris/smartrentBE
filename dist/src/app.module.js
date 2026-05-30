@@ -22,6 +22,8 @@ const maintenance_module_1 = require("./maintenance/maintenance.module");
 const notifications_module_1 = require("./notifications/notifications.module");
 const reports_module_1 = require("./reports/reports.module");
 const subscriptions_module_1 = require("./subscriptions/subscriptions.module");
+const units_module_1 = require("./units/units.module");
+const vacant_listings_module_1 = require("./vacant-listings/vacant-listings.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -42,6 +44,8 @@ exports.AppModule = AppModule = __decorate([
             notifications_module_1.NotificationsModule,
             reports_module_1.ReportsModule,
             subscriptions_module_1.SubscriptionsModule,
+            units_module_1.UnitsModule,
+            vacant_listings_module_1.VacantListingsModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],

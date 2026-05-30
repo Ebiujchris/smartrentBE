@@ -46,6 +46,9 @@ let PropertiesController = class PropertiesController {
     async createUnit(id, data, user) {
         return this.propertiesService.createUnit(id, data, user.id);
     }
+    async getUnit(unitId, user) {
+        return this.propertiesService.getUnitById(unitId, user.id);
+    }
 };
 exports.PropertiesController = PropertiesController;
 __decorate([
@@ -105,6 +108,14 @@ __decorate([
     __metadata("design:paramtypes", [String, Object, Object]),
     __metadata("design:returntype", Promise)
 ], PropertiesController.prototype, "createUnit", null);
+__decorate([
+    (0, common_1.Get)('units/:unitId'),
+    __param(0, (0, common_1.Param)('unitId')),
+    __param(1, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], PropertiesController.prototype, "getUnit", null);
 exports.PropertiesController = PropertiesController = __decorate([
     (0, common_1.Controller)('properties'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),

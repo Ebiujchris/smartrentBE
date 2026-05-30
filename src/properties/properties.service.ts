@@ -173,4 +173,49 @@ export class PropertiesService {
       },
     });
   }
+
+  async getUnitById(unitId: string, userId: string) {
+    const unit = await this.prisma.unit.findUnique({
+      where: { id: unitId },
+      include: {
+        property: true,
+        leases: {
+          include: {
+            tenant: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    fullName: true,
+                    email: true,
+                    phone: true,
+                  },
+                },
+              },
+            },
+            payments: {
+              orderBy: { dueDate: 'desc' },
+              take: 10,
+            },
+          },
+          orderBy: { createdAt: 'desc' },
+        },
+        maintenanceRequests: {
+          orderBy: { reportedAt: 'desc' },
+          take: 5,
+        },
+      },
+    });
+
+    if (!unit) {
+      throw new NotFoundException('Unit not found');
+    }
+
+    // Verify ownership via the property
+    if (unit.property.ownerId !== userId) {
+      throw new ForbiddenException('Access denied');
+    }
+
+    return unit;
+  }
 }

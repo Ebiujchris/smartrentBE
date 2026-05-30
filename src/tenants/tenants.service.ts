@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateTenantDto } from './dto/create-tenant.dto';
 import { UpdateTenantDto } from './dto/update-tenant.dto';
@@ -8,7 +12,24 @@ export class TenantsService {
   constructor(private prisma: PrismaService) {}
 
   async create(userId: string, createTenantDto: CreateTenantDto) {
-    const { email, password, fullName, phone, nationalId, emergencyContact, occupation } = createTenantDto;
+    const {
+      email,
+      password,
+      fullName,
+      phone,
+      nationalId,
+      emergencyContact,
+      occupation,
+    } = createTenantDto;
+
+    // Check if user already exists
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (existingUser) {
+      throw new ConflictException('A user with this email already exists');
+    }
 
     // Create user account for tenant
     const bcrypt = require('bcrypt');
@@ -38,38 +59,109 @@ export class TenantsService {
   }
 
   async findAll(userId: string) {
-    // Get all tenants for properties owned by this user
-    const tenants = await this.prisma.tenant.findMany({
-      include: {
-        user: {
-          select: {
-            id: true,
-            email: true,
-            fullName: true,
-            phone: true,
-            createdAt: true,
-          },
-        },
-        leases: {
-          include: {
-            unit: {
-              include: {
-                property: true,
+    // Get user to check role
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    let tenants;
+
+    if (user.role === 'LANDLORD' || user.role === 'PROPERTY_MANAGER') {
+      // Get tenants for properties owned by this landlord
+      tenants = await this.prisma.tenant.findMany({
+        where: {
+          leases: {
+            some: {
+              unit: {
+                property: {
+                  ownerId: userId,
+                },
               },
             },
           },
-          where: {
-            isActive: true,
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              email: true,
+              fullName: true,
+              phone: true,
+              createdAt: true,
+            },
+          },
+          leases: {
+            include: {
+              unit: {
+                include: {
+                  property: true,
+                },
+              },
+            },
+            where: {
+              isActive: true,
+              unit: {
+                property: {
+                  ownerId: userId,
+                },
+              },
+            },
+          },
+          payments: {
+            where: {
+              lease: {
+                unit: {
+                  property: {
+                    ownerId: userId,
+                  },
+                },
+              },
+            },
+            orderBy: {
+              dueDate: 'desc',
+            },
+            take: 5,
           },
         },
-        payments: {
-          orderBy: {
-            dueDate: 'desc',
+      });
+    } else {
+      // Admin sees all tenants
+      tenants = await this.prisma.tenant.findMany({
+        include: {
+          user: {
+            select: {
+              id: true,
+              email: true,
+              fullName: true,
+              phone: true,
+              createdAt: true,
+            },
           },
-          take: 5,
+          leases: {
+            include: {
+              unit: {
+                include: {
+                  property: true,
+                },
+              },
+            },
+            where: {
+              isActive: true,
+            },
+          },
+          payments: {
+            orderBy: {
+              dueDate: 'desc',
+            },
+            take: 5,
+          },
         },
-      },
-    });
+      });
+    }
 
     return tenants;
   }
@@ -126,7 +218,8 @@ export class TenantsService {
       throw new NotFoundException('Tenant not found');
     }
 
-    const { fullName, phone, nationalId, emergencyContact, occupation } = updateTenantDto;
+    const { fullName, phone, nationalId, emergencyContact, occupation } =
+      updateTenantDto;
 
     const updated = await this.prisma.tenant.update({
       where: { id },
@@ -163,5 +256,18 @@ export class TenantsService {
     });
 
     return { message: 'Tenant deleted successfully' };
+  }
+
+  /**
+   * Rollback: delete user by user ID (cascade removes tenant profile via Prisma schema).
+   * Called when lease creation fails after tenant was already created.
+   */
+  async removeByUserId(userId: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      return { message: 'User not found, nothing to rollback' };
+    }
+    await this.prisma.user.delete({ where: { id: userId } });
+    return { message: 'Rollback successful — user and tenant profile removed' };
   }
 }

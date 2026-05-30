@@ -35,6 +35,9 @@ let PaymentsController = class PaymentsController {
     getOverdue(user) {
         return this.paymentsService.getOverduePayments(user.id);
     }
+    findByTenant(tenantId) {
+        return this.paymentsService.findByTenantId(tenantId);
+    }
     findOne(id) {
         return this.paymentsService.findOne(id);
     }
@@ -42,7 +45,7 @@ let PaymentsController = class PaymentsController {
         return this.paymentsService.update(id, updatePaymentDto);
     }
     recordPayment(id, body) {
-        return this.paymentsService.recordPayment(id, body.method, body.reference);
+        return this.paymentsService.recordPayment(id, body.method, body.reference, body.notes);
     }
     remove(id) {
         return this.paymentsService.remove(id);
@@ -74,6 +77,14 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], PaymentsController.prototype, "getOverdue", null);
+__decorate([
+    (0, common_1.Get)('tenant/:tenantId'),
+    (0, roles_decorator_1.Roles)('LANDLORD', 'PROPERTY_MANAGER', 'ADMIN'),
+    __param(0, (0, common_1.Param)('tenantId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], PaymentsController.prototype, "findByTenant", null);
 __decorate([
     (0, common_1.Get)(':id'),
     (0, roles_decorator_1.Roles)('LANDLORD', 'PROPERTY_MANAGER', 'ADMIN', 'TENANT'),

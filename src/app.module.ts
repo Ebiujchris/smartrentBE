@@ -13,6 +13,8 @@ import { MaintenanceModule } from './maintenance/maintenance.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { ReportsModule } from './reports/reports.module';
 import { SubscriptionsModule } from './subscriptions/subscriptions.module';
+import { UnitsModule } from './units/units.module';
+import { VacantListingsModule } from './vacant-listings/vacant-listings.module';
 
 @Module({
   imports: [
@@ -30,6 +32,8 @@ import { SubscriptionsModule } from './subscriptions/subscriptions.module';
     NotificationsModule,
     ReportsModule,
     SubscriptionsModule,
+    UnitsModule,
+    VacantListingsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -46,4 +46,9 @@ export class PropertiesController {
   async createUnit(@Param('id') id: string, @Body() data: any, @CurrentUser() user: any) {
     return this.propertiesService.createUnit(id, data, user.id);
   }
+
+  @Get('units/:unitId')
+  async getUnit(@Param('unitId') unitId: string, @CurrentUser() user: any) {
+    return this.propertiesService.getUnitById(unitId, user.id);
+  }
 }

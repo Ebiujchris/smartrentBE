@@ -8,7 +8,8 @@ export class PaymentsService {
   constructor(private prisma: PrismaService) {}
 
   async create(userId: string, createPaymentDto: CreatePaymentDto) {
-    const { leaseId, tenantId, amount, dueDate, method, reference, notes } = createPaymentDto;
+    const { leaseId, tenantId, amount, dueDate, method, reference, notes } =
+      createPaymentDto;
 
     const payment = await this.prisma.payment.create({
       data: {
@@ -43,7 +44,110 @@ export class PaymentsService {
   }
 
   async findAll(userId: string) {
+    // First, check if user is a tenant or landlord
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        tenantProfile: true,
+        properties: true,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    let payments;
+
+    if (user.role === 'TENANT' && user.tenantProfile) {
+      // Tenants can only see their own payments
+      payments = await this.prisma.payment.findMany({
+        where: {
+          tenantId: user.tenantProfile.id,
+        },
+        include: {
+          lease: {
+            include: {
+              unit: {
+                include: {
+                  property: true,
+                },
+              },
+            },
+          },
+          tenant: {
+            include: {
+              user: true,
+            },
+          },
+        },
+        orderBy: {
+          dueDate: 'desc',
+        },
+      });
+    } else if (user.role === 'LANDLORD' || user.role === 'PROPERTY_MANAGER') {
+      // Landlords can see payments for their properties
+      payments = await this.prisma.payment.findMany({
+        where: {
+          lease: {
+            unit: {
+              property: {
+                ownerId: userId,
+              },
+            },
+          },
+        },
+        include: {
+          lease: {
+            include: {
+              unit: {
+                include: {
+                  property: true,
+                },
+              },
+            },
+          },
+          tenant: {
+            include: {
+              user: true,
+            },
+          },
+        },
+        orderBy: {
+          dueDate: 'desc',
+        },
+      });
+    } else {
+      // Admins or other roles see all payments
+      payments = await this.prisma.payment.findMany({
+        include: {
+          lease: {
+            include: {
+              unit: {
+                include: {
+                  property: true,
+                },
+              },
+            },
+          },
+          tenant: {
+            include: {
+              user: true,
+            },
+          },
+        },
+        orderBy: {
+          dueDate: 'desc',
+        },
+      });
+    }
+
+    return payments;
+  }
+
+  async findByTenantId(tenantId: string) {
     const payments = await this.prisma.payment.findMany({
+      where: { tenantId },
       include: {
         lease: {
           include: {
@@ -109,8 +213,12 @@ export class PaymentsService {
       where: { id },
       data: {
         amount: updatePaymentDto.amount,
-        dueDate: updatePaymentDto.dueDate ? new Date(updatePaymentDto.dueDate) : undefined,
-        paidDate: updatePaymentDto.paidDate ? new Date(updatePaymentDto.paidDate) : undefined,
+        dueDate: updatePaymentDto.dueDate
+          ? new Date(updatePaymentDto.dueDate)
+          : undefined,
+        paidDate: updatePaymentDto.paidDate
+          ? new Date(updatePaymentDto.paidDate)
+          : undefined,
         status: updatePaymentDto.status as any,
         method: updatePaymentDto.method as any,
         reference: updatePaymentDto.reference,
@@ -137,7 +245,12 @@ export class PaymentsService {
     return updated;
   }
 
-  async recordPayment(id: string, method: string, reference?: string) {
+  async recordPayment(
+    id: string,
+    method: string,
+    reference?: string,
+    notes?: string,
+  ) {
     const payment = await this.prisma.payment.findUnique({
       where: { id },
     });
@@ -177,16 +290,38 @@ export class PaymentsService {
 
   async getOverduePayments(userId: string) {
     const today = new Date();
-    
-    const overduePayments = await this.prisma.payment.findMany({
-      where: {
-        status: {
-          in: ['PENDING', 'OVERDUE'],
-        },
-        dueDate: {
-          lt: today,
-        },
+
+    // Get user to check role
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const whereClause: any = {
+      status: {
+        in: ['PENDING', 'OVERDUE'],
       },
+      dueDate: {
+        lt: today,
+      },
+    };
+
+    // Filter by landlord's properties
+    if (user.role === 'LANDLORD' || user.role === 'PROPERTY_MANAGER') {
+      whereClause.lease = {
+        unit: {
+          property: {
+            ownerId: userId,
+          },
+        },
+      };
+    }
+
+    const overduePayments = await this.prisma.payment.findMany({
+      where: whereClause,
       include: {
         lease: {
           include: {

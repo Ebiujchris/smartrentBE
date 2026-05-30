@@ -41,6 +41,9 @@ let TenantsController = class TenantsController {
     remove(id) {
         return this.tenantsService.remove(id);
     }
+    removeByUserId(userId) {
+        return this.tenantsService.removeByUserId(userId);
+    }
 };
 exports.TenantsController = TenantsController;
 __decorate([
@@ -85,6 +88,14 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], TenantsController.prototype, "remove", null);
+__decorate([
+    (0, common_1.Delete)('user/:userId'),
+    (0, roles_decorator_1.Roles)('LANDLORD', 'PROPERTY_MANAGER', 'ADMIN'),
+    __param(0, (0, common_1.Param)('userId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], TenantsController.prototype, "removeByUserId", null);
 exports.TenantsController = TenantsController = __decorate([
     (0, common_1.Controller)('tenants'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),

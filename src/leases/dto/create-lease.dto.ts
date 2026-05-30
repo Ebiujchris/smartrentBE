@@ -1,4 +1,11 @@
-import { IsNotEmpty, IsString, IsDateString, IsNumber, IsPositive } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  IsDateString,
+  IsNumber,
+  IsPositive,
+} from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreateLeaseDto {
   @IsString()
@@ -17,10 +24,12 @@ export class CreateLeaseDto {
   @IsNotEmpty()
   endDate: string;
 
+  @Type(() => Number)
   @IsNumber()
   @IsPositive()
   rentAmount: number;
 
+  @Type(() => Number)
   @IsNumber()
   @IsPositive()
   deposit: number;
