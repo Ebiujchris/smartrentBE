@@ -32,7 +32,7 @@ export class TenantsService {
     }
 
     // Create user account for tenant
-    const bcrypt = require('bcrypt');
+    const bcrypt = require('bcryptjs');
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await this.prisma.user.create({
