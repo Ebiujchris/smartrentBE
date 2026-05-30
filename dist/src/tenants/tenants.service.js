@@ -25,7 +25,7 @@ let TenantsService = class TenantsService {
         if (existingUser) {
             throw new common_1.ConflictException('A user with this email already exists');
         }
-        const bcrypt = require('bcrypt');
+        const bcrypt = require('bcryptjs');
         const hashedPassword = await bcrypt.hash(password, 10);
         const user = await this.prisma.user.create({
             data: {
