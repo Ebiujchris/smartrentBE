@@ -11,9 +11,12 @@ async function bootstrap() {
       'http://localhost:3000',
       'http://localhost:3001',
       'http://localhost:3002',
+      'https://smartrent-fe-blush.vercel.app',
       process.env.FRONTEND_URL,
     ].filter(Boolean),
     credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   });
   
   app.useGlobalPipes(
