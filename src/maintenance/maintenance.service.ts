@@ -13,22 +13,24 @@ export class MaintenanceService {
     let finalTenantId: string;
 
     if (user.role === 'TENANT') {
-      finalTenantId = user.tenantProfile.id;
-
       const tenant = await this.prisma.tenant.findUnique({
         where: { userId: user.id },
       });
       if (!tenant) {
         throw new NotFoundException('Tenant profile not found');
       }
+      finalTenantId = tenant.id;
     } else {
+      if (!tenantId) {
+        throw new NotFoundException('Tenant ID is required for non-tenant users');
+      }
       finalTenantId = tenantId;
     }
 
     const request = await this.prisma.maintenanceRequest.create({
       data: {
         unitId,
-        tenantId,
+        tenantId: finalTenantId,
         title,
         description,
         priority: (priority as any) || 'MEDIUM',

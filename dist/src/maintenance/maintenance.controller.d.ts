@@ -5,6 +5,50 @@ export declare class MaintenanceController {
     private readonly maintenanceService;
     constructor(maintenanceService: MaintenanceService);
     create(user: any, createMaintenanceDto: CreateMaintenanceDto): Promise<{
+        unit: {
+            property: {
+                id: string;
+                description: string | null;
+                createdAt: Date;
+                updatedAt: Date;
+                name: string;
+                address: string;
+                ownerId: string;
+            };
+        } & {
+            id: string;
+            status: import("@prisma/client").$Enums.UnitStatus;
+            createdAt: Date;
+            updatedAt: Date;
+            unitNumber: string;
+            floor: string | null;
+            bedrooms: number | null;
+            bathrooms: number | null;
+            size: string | null;
+            rentAmount: import("@prisma/client-runtime-utils").Decimal;
+            propertyId: string;
+        };
+        tenant: {
+            user: {
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                email: string;
+                password: string;
+                fullName: string;
+                phone: string | null;
+                role: import("@prisma/client").$Enums.UserRole;
+            };
+        } & {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            userId: string;
+            nationalId: string | null;
+            emergencyContact: string | null;
+            occupation: string | null;
+        };
+    } & {
         id: string;
         title: string;
         description: string;
