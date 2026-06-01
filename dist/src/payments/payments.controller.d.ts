@@ -1,9 +1,11 @@
 import { PaymentsService } from './payments.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
+import { PrismaService } from '../prisma/prisma.service';
 export declare class PaymentsController {
     private readonly paymentsService;
-    constructor(paymentsService: PaymentsService);
+    private readonly prisma;
+    constructor(paymentsService: PaymentsService, prisma: PrismaService);
     create(user: any, createPaymentDto: CreatePaymentDto): Promise<{
         tenant: {
             user: {
@@ -360,32 +362,19 @@ export declare class PaymentsController {
         reference: string | null;
         notes: string | null;
     }>;
+    fixPaymentDates(): Promise<{
+        message: string;
+        count: number;
+    }>;
     recordPayment(id: string, body: {
         method: string;
         reference?: string;
         notes?: string;
     }): Promise<{
-        tenant: {
-            user: {
-                email: string;
-                password: string;
-                fullName: string;
-                phone: string | null;
-                role: import("@prisma/client").$Enums.UserRole;
-                id: string;
-                createdAt: Date;
-                updatedAt: Date;
-            };
-        } & {
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            userId: string;
-            nationalId: string | null;
-            emergencyContact: string | null;
-            occupation: string | null;
-        };
+        amount: number;
         lease: {
+            rentAmount: number;
+            deposit: number;
             unit: {
                 property: {
                     id: string;
@@ -409,24 +398,39 @@ export declare class PaymentsController {
                 rentAmount: import("@prisma/client-runtime-utils").Decimal;
                 propertyId: string;
             };
-        } & {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            rentAmount: import("@prisma/client-runtime-utils").Decimal;
             isActive: boolean;
             tenantId: string;
             unitId: string;
             startDate: Date;
             endDate: Date;
-            deposit: import("@prisma/client-runtime-utils").Decimal;
         };
-    } & {
+        tenant: {
+            user: {
+                email: string;
+                password: string;
+                fullName: string;
+                phone: string | null;
+                role: import("@prisma/client").$Enums.UserRole;
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+            };
+        } & {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            userId: string;
+            nationalId: string | null;
+            emergencyContact: string | null;
+            occupation: string | null;
+        };
         id: string;
         createdAt: Date;
         updatedAt: Date;
         status: import("@prisma/client").$Enums.PaymentStatus;
-        amount: import("@prisma/client-runtime-utils").Decimal;
         tenantId: string;
         dueDate: Date;
         leaseId: string;

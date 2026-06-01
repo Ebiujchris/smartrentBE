@@ -23,16 +23,16 @@ let NotificationsController = class NotificationsController {
         this.notificationsService = notificationsService;
     }
     async getUserNotifications(user) {
-        return this.notificationsService.getUserNotifications(user.userId);
+        return this.notificationsService.getUserNotifications(user.id);
     }
     async markAsRead(id, user) {
-        return this.notificationsService.markAsRead(id, user.userId);
+        return this.notificationsService.markAsRead(id, user.id);
     }
     async markAllAsRead(user) {
-        return this.notificationsService.markAllAsRead(user.userId);
+        return this.notificationsService.markAllAsRead(user.id);
     }
     async deleteNotification(id, user) {
-        return this.notificationsService.deleteNotification(id, user.userId);
+        return this.notificationsService.deleteNotification(id, user.id);
     }
 };
 exports.NotificationsController = NotificationsController;

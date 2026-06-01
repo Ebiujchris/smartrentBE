@@ -275,6 +275,7 @@ export class PaymentsService {
         paidDate: new Date(),
         method: method as any,
         reference,
+        notes,
       },
       include: {
         lease: {
@@ -294,7 +295,16 @@ export class PaymentsService {
       },
     });
 
-    return updated;
+    // Convert Decimal to number
+    return {
+      ...updated,
+      amount: updated.amount.toNumber(),
+      lease: {
+        ...updated.lease,
+        rentAmount: updated.lease.rentAmount.toNumber(),
+        deposit: updated.lease.deposit.toNumber(),
+      },
+    };
   }
 
   async getOverduePayments(userId: string) {

@@ -257,6 +257,7 @@ let PaymentsService = class PaymentsService {
                 paidDate: new Date(),
                 method: method,
                 reference,
+                notes,
             },
             include: {
                 lease: {
@@ -275,7 +276,15 @@ let PaymentsService = class PaymentsService {
                 },
             },
         });
-        return updated;
+        return {
+            ...updated,
+            amount: updated.amount.toNumber(),
+            lease: {
+                ...updated.lease,
+                rentAmount: updated.lease.rentAmount.toNumber(),
+                deposit: updated.lease.deposit.toNumber(),
+            },
+        };
     }
     async getOverduePayments(userId) {
         const today = new Date();

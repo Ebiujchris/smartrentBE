@@ -25,28 +25,28 @@ let ContractsController = class ContractsController {
         this.contractsService = contractsService;
     }
     create(user, createContractDto) {
-        return this.contractsService.create(user.userId, createContractDto);
+        return this.contractsService.create(user.id, createContractDto);
     }
     findAll(user) {
-        return this.contractsService.findAll(user.userId, user.role);
+        return this.contractsService.findAll(user.id, user.role);
     }
     findOne(id, user) {
-        return this.contractsService.findOne(id, user.userId, user.role);
+        return this.contractsService.findOne(id, user.id, user.role);
     }
     update(id, user, updateContractDto) {
-        return this.contractsService.update(id, user.userId, updateContractDto);
+        return this.contractsService.update(id, user.id, updateContractDto);
     }
     remove(id, user) {
-        return this.contractsService.delete(id, user.userId);
+        return this.contractsService.delete(id, user.id);
     }
     sendContract(id, user) {
-        return this.contractsService.sendContract(id, user.userId);
+        return this.contractsService.sendContract(id, user.id);
     }
     acceptContract(id, user) {
-        return this.contractsService.acceptContract(id, user.userId);
+        return this.contractsService.acceptContract(id, user.id);
     }
     rejectContract(id, user, reason) {
-        return this.contractsService.rejectContract(id, user.userId, reason);
+        return this.contractsService.rejectContract(id, user.id, reason);
     }
 };
 exports.ContractsController = ContractsController;

@@ -29,6 +29,8 @@ let ContractsService = class ContractsService {
             data: {
                 ...createContractDto,
                 landlordId,
+                startDate: new Date(createContractDto.startDate),
+                endDate: new Date(createContractDto.endDate),
                 rentAmount: createContractDto.rentAmount,
                 deposit: createContractDto.deposit,
                 terms: createContractDto.terms || [],
@@ -59,14 +61,16 @@ let ContractsService = class ContractsService {
         return contract;
     }
     async findAll(userId, userRole) {
+        console.log('findAll contracts - userId:', userId, 'userRole:', userRole);
         if (userRole === 'TENANT') {
             const tenant = await this.prisma.tenant.findUnique({
                 where: { userId },
             });
+            console.log('Tenant profile found:', tenant ? tenant.id : 'NOT FOUND');
             if (!tenant) {
                 return [];
             }
-            return this.prisma.contract.findMany({
+            const contracts = await this.prisma.contract.findMany({
                 where: { tenantId: tenant.id },
                 include: {
                     landlord: {
@@ -91,8 +95,10 @@ let ContractsService = class ContractsService {
                 },
                 orderBy: { createdAt: 'desc' },
             });
+            console.log('Contracts found for tenant:', contracts.length);
+            return contracts;
         }
-        return this.prisma.contract.findMany({
+        const contracts = await this.prisma.contract.findMany({
             where: { landlordId: userId },
             include: {
                 landlord: {
@@ -117,6 +123,8 @@ let ContractsService = class ContractsService {
             },
             orderBy: { createdAt: 'desc' },
         });
+        console.log('Contracts found for landlord:', contracts.length);
+        return contracts;
     }
     async findOne(id, userId, userRole) {
         const contract = await this.prisma.contract.findUnique({
@@ -261,6 +269,11 @@ let ContractsService = class ContractsService {
                     },
                 },
             },
+        });
+        console.log('Creating notification for tenant:', {
+            tenantUserId: contract.tenant.userId,
+            tenantName: contract.tenant.user.fullName,
+            landlordId: contract.landlordId,
         });
         await this.prisma.notification.create({
             data: {

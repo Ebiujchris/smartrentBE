@@ -15,11 +15,15 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Controller('payments')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class PaymentsController {
-  constructor(private readonly paymentsService: PaymentsService) {}
+  constructor(
+    private readonly paymentsService: PaymentsService,
+    private readonly prisma: PrismaService,
+  ) {}
 
   @Post()
   @Roles('LANDLORD', 'PROPERTY_MANAGER', 'ADMIN')
@@ -55,6 +59,31 @@ export class PaymentsController {
   @Roles('LANDLORD', 'PROPERTY_MANAGER', 'ADMIN')
   update(@Param('id') id: string, @Body() updatePaymentDto: UpdatePaymentDto) {
     return this.paymentsService.update(id, updatePaymentDto);
+  }
+
+  @Post('fix-dates')
+  @Roles('ADMIN')
+  async fixPaymentDates() {
+    const paymentsToFix = await this.prisma.payment.findMany({
+      where: {
+        status: 'PAID',
+        paidDate: null,
+      },
+    });
+
+    for (const payment of paymentsToFix) {
+      await this.prisma.payment.update({
+        where: { id: payment.id },
+        data: {
+          paidDate: payment.createdAt || new Date(),
+        },
+      });
+    }
+
+    return {
+      message: `Fixed ${paymentsToFix.length} payments with null paidDate`,
+      count: paymentsToFix.length,
+    };
   }
 
   @Post(':id/record')

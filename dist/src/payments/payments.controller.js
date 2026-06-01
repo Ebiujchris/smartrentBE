@@ -21,10 +21,13 @@ const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const roles_guard_1 = require("../auth/guards/roles.guard");
 const roles_decorator_1 = require("../auth/decorators/roles.decorator");
 const current_user_decorator_1 = require("../auth/decorators/current-user.decorator");
+const prisma_service_1 = require("../prisma/prisma.service");
 let PaymentsController = class PaymentsController {
     paymentsService;
-    constructor(paymentsService) {
+    prisma;
+    constructor(paymentsService, prisma) {
         this.paymentsService = paymentsService;
+        this.prisma = prisma;
     }
     create(user, createPaymentDto) {
         return this.paymentsService.create(user.id, createPaymentDto);
@@ -43,6 +46,26 @@ let PaymentsController = class PaymentsController {
     }
     update(id, updatePaymentDto) {
         return this.paymentsService.update(id, updatePaymentDto);
+    }
+    async fixPaymentDates() {
+        const paymentsToFix = await this.prisma.payment.findMany({
+            where: {
+                status: 'PAID',
+                paidDate: null,
+            },
+        });
+        for (const payment of paymentsToFix) {
+            await this.prisma.payment.update({
+                where: { id: payment.id },
+                data: {
+                    paidDate: payment.createdAt || new Date(),
+                },
+            });
+        }
+        return {
+            message: `Fixed ${paymentsToFix.length} payments with null paidDate`,
+            count: paymentsToFix.length,
+        };
     }
     recordPayment(id, body) {
         return this.paymentsService.recordPayment(id, body.method, body.reference, body.notes);
@@ -103,6 +126,13 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], PaymentsController.prototype, "update", null);
 __decorate([
+    (0, common_1.Post)('fix-dates'),
+    (0, roles_decorator_1.Roles)('ADMIN'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], PaymentsController.prototype, "fixPaymentDates", null);
+__decorate([
     (0, common_1.Post)(':id/record'),
     (0, roles_decorator_1.Roles)('LANDLORD', 'PROPERTY_MANAGER', 'ADMIN'),
     __param(0, (0, common_1.Param)('id')),
@@ -122,6 +152,7 @@ __decorate([
 exports.PaymentsController = PaymentsController = __decorate([
     (0, common_1.Controller)('payments'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
-    __metadata("design:paramtypes", [payments_service_1.PaymentsService])
+    __metadata("design:paramtypes", [payments_service_1.PaymentsService,
+        prisma_service_1.PrismaService])
 ], PaymentsController);
 //# sourceMappingURL=payments.controller.js.map

@@ -18,21 +18,21 @@ export class NotificationsController {
 
   @Get()
   async getUserNotifications(@CurrentUser() user: any) {
-    return this.notificationsService.getUserNotifications(user.userId);
+    return this.notificationsService.getUserNotifications(user.id);
   }
 
   @Patch(':id/read')
   async markAsRead(@Param('id') id: string, @CurrentUser() user: any) {
-    return this.notificationsService.markAsRead(id, user.userId);
+    return this.notificationsService.markAsRead(id, user.id);
   }
 
   @Post('mark-all-read')
   async markAllAsRead(@CurrentUser() user: any) {
-    return this.notificationsService.markAllAsRead(user.userId);
+    return this.notificationsService.markAllAsRead(user.id);
   }
 
   @Delete(':id')
   async deleteNotification(@Param('id') id: string, @CurrentUser() user: any) {
-    return this.notificationsService.deleteNotification(id, user.userId);
+    return this.notificationsService.deleteNotification(id, user.id);
   }
 }
