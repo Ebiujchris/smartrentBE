@@ -81,7 +81,7 @@ let AuthService = class AuthService {
                     userId: user.id,
                     plan: 'STARTER',
                     status: 'TRIAL',
-                    maxUnits: 10,
+                    maxUnits: 15,
                     trialEndsAt: trialEndDate,
                     currentPeriodEnd: periodEnd,
                     amount: 75000,

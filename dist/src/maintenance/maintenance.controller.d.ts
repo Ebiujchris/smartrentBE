@@ -55,8 +55,8 @@ export declare class MaintenanceController {
         status: import("@prisma/client").$Enums.MaintenanceStatus;
         description: string;
         reportedAt: Date;
-        tenantId: string;
         unitId: string;
+        tenantId: string;
         notes: string | null;
         title: string;
         priority: import("@prisma/client").$Enums.MaintenancePriority;
@@ -113,8 +113,8 @@ export declare class MaintenanceController {
         status: import("@prisma/client").$Enums.MaintenanceStatus;
         description: string;
         reportedAt: Date;
-        tenantId: string;
         unitId: string;
+        tenantId: string;
         notes: string | null;
         title: string;
         priority: import("@prisma/client").$Enums.MaintenancePriority;
@@ -171,8 +171,8 @@ export declare class MaintenanceController {
         status: import("@prisma/client").$Enums.MaintenanceStatus;
         description: string;
         reportedAt: Date;
-        tenantId: string;
         unitId: string;
+        tenantId: string;
         notes: string | null;
         title: string;
         priority: import("@prisma/client").$Enums.MaintenancePriority;
@@ -229,8 +229,8 @@ export declare class MaintenanceController {
         status: import("@prisma/client").$Enums.MaintenanceStatus;
         description: string;
         reportedAt: Date;
-        tenantId: string;
         unitId: string;
+        tenantId: string;
         notes: string | null;
         title: string;
         priority: import("@prisma/client").$Enums.MaintenancePriority;
@@ -290,8 +290,8 @@ export declare class MaintenanceController {
         status: import("@prisma/client").$Enums.MaintenanceStatus;
         description: string;
         reportedAt: Date;
-        tenantId: string;
         unitId: string;
+        tenantId: string;
         notes: string | null;
         title: string;
         priority: import("@prisma/client").$Enums.MaintenancePriority;
