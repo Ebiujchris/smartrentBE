@@ -6,7 +6,7 @@ export class PropertiesService {
   constructor(private prisma: PrismaService) {}
 
   async findAll(userId: string) {
-    return this.prisma.property.findMany({
+    const properties = await this.prisma.property.findMany({
       where: { ownerId: userId },
       include: {
         units: true,
@@ -16,6 +16,15 @@ export class PropertiesService {
       },
       orderBy: { createdAt: 'desc' },
     });
+
+    // Convert Decimal to number for units
+    return properties.map((property) => ({
+      ...property,
+      units: property.units.map((unit) => ({
+        ...unit,
+        rentAmount: unit.rentAmount.toNumber(),
+      })),
+    }));
   }
 
   async findOne(id: string, userId: string) {
@@ -53,7 +62,19 @@ export class PropertiesService {
       throw new ForbiddenException('Access denied');
     }
 
-    return property;
+    // Convert Decimal to number
+    return {
+      ...property,
+      units: property.units.map((unit) => ({
+        ...unit,
+        rentAmount: unit.rentAmount.toNumber(),
+        leases: unit.leases.map((lease) => ({
+          ...lease,
+          rentAmount: lease.rentAmount.toNumber(),
+          deposit: lease.deposit.toNumber(),
+        })),
+      })),
+    };
   }
 
   async create(data: any, userId: string) {
@@ -123,7 +144,7 @@ export class PropertiesService {
       throw new ForbiddenException('Access denied');
     }
 
-    return this.prisma.unit.findMany({
+    const units = await this.prisma.unit.findMany({
       where: { propertyId },
       include: {
         leases: {
@@ -145,6 +166,17 @@ export class PropertiesService {
       },
       orderBy: { unitNumber: 'asc' },
     });
+
+    // Convert Decimal to number
+    return units.map((unit) => ({
+      ...unit,
+      rentAmount: unit.rentAmount.toNumber(),
+      leases: unit.leases.map((lease) => ({
+        ...lease,
+        rentAmount: lease.rentAmount.toNumber(),
+        deposit: lease.deposit.toNumber(),
+      })),
+    }));
   }
 
   async createUnit(propertyId: string, data: any, userId: string) {

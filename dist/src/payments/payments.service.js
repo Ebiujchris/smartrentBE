@@ -142,7 +142,15 @@ let PaymentsService = class PaymentsService {
                 },
             });
         }
-        return payments;
+        return payments.map((payment) => ({
+            ...payment,
+            amount: payment.amount.toNumber(),
+            lease: {
+                ...payment.lease,
+                rentAmount: payment.lease.rentAmount.toNumber(),
+                deposit: payment.lease.deposit.toNumber(),
+            },
+        }));
     }
     async findByTenantId(tenantId) {
         const payments = await this.prisma.payment.findMany({

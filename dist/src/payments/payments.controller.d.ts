@@ -53,10 +53,10 @@ export declare class PaymentsController {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            isActive: boolean;
             rentAmount: import("@prisma/client-runtime-utils").Decimal;
-            unitId: string;
+            isActive: boolean;
             tenantId: string;
+            unitId: string;
             startDate: Date;
             endDate: Date;
             deposit: import("@prisma/client-runtime-utils").Decimal;
@@ -67,13 +67,13 @@ export declare class PaymentsController {
         updatedAt: Date;
         status: import("@prisma/client").$Enums.PaymentStatus;
         amount: import("@prisma/client-runtime-utils").Decimal;
-        dueDate: Date;
         tenantId: string;
+        dueDate: Date;
         leaseId: string;
+        paidDate: Date | null;
         method: import("@prisma/client").$Enums.PaymentMethod | null;
         reference: string | null;
         notes: string | null;
-        paidDate: Date | null;
     }>;
     findAll(user: any): Promise<any>;
     getOverdue(user: any): Promise<({
@@ -125,10 +125,10 @@ export declare class PaymentsController {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            isActive: boolean;
             rentAmount: import("@prisma/client-runtime-utils").Decimal;
-            unitId: string;
+            isActive: boolean;
             tenantId: string;
+            unitId: string;
             startDate: Date;
             endDate: Date;
             deposit: import("@prisma/client-runtime-utils").Decimal;
@@ -139,13 +139,13 @@ export declare class PaymentsController {
         updatedAt: Date;
         status: import("@prisma/client").$Enums.PaymentStatus;
         amount: import("@prisma/client-runtime-utils").Decimal;
-        dueDate: Date;
         tenantId: string;
+        dueDate: Date;
         leaseId: string;
+        paidDate: Date | null;
         method: import("@prisma/client").$Enums.PaymentMethod | null;
         reference: string | null;
         notes: string | null;
-        paidDate: Date | null;
     })[]>;
     findByTenant(tenantId: string): Promise<({
         tenant: {
@@ -196,10 +196,10 @@ export declare class PaymentsController {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            isActive: boolean;
             rentAmount: import("@prisma/client-runtime-utils").Decimal;
-            unitId: string;
+            isActive: boolean;
             tenantId: string;
+            unitId: string;
             startDate: Date;
             endDate: Date;
             deposit: import("@prisma/client-runtime-utils").Decimal;
@@ -210,13 +210,13 @@ export declare class PaymentsController {
         updatedAt: Date;
         status: import("@prisma/client").$Enums.PaymentStatus;
         amount: import("@prisma/client-runtime-utils").Decimal;
-        dueDate: Date;
         tenantId: string;
+        dueDate: Date;
         leaseId: string;
+        paidDate: Date | null;
         method: import("@prisma/client").$Enums.PaymentMethod | null;
         reference: string | null;
         notes: string | null;
-        paidDate: Date | null;
     })[]>;
     findOne(id: string): Promise<{
         tenant: {
@@ -267,10 +267,10 @@ export declare class PaymentsController {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            isActive: boolean;
             rentAmount: import("@prisma/client-runtime-utils").Decimal;
-            unitId: string;
+            isActive: boolean;
             tenantId: string;
+            unitId: string;
             startDate: Date;
             endDate: Date;
             deposit: import("@prisma/client-runtime-utils").Decimal;
@@ -281,13 +281,13 @@ export declare class PaymentsController {
         updatedAt: Date;
         status: import("@prisma/client").$Enums.PaymentStatus;
         amount: import("@prisma/client-runtime-utils").Decimal;
-        dueDate: Date;
         tenantId: string;
+        dueDate: Date;
         leaseId: string;
+        paidDate: Date | null;
         method: import("@prisma/client").$Enums.PaymentMethod | null;
         reference: string | null;
         notes: string | null;
-        paidDate: Date | null;
     }>;
     update(id: string, updatePaymentDto: UpdatePaymentDto): Promise<{
         tenant: {
@@ -338,10 +338,10 @@ export declare class PaymentsController {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            isActive: boolean;
             rentAmount: import("@prisma/client-runtime-utils").Decimal;
-            unitId: string;
+            isActive: boolean;
             tenantId: string;
+            unitId: string;
             startDate: Date;
             endDate: Date;
             deposit: import("@prisma/client-runtime-utils").Decimal;
@@ -352,13 +352,13 @@ export declare class PaymentsController {
         updatedAt: Date;
         status: import("@prisma/client").$Enums.PaymentStatus;
         amount: import("@prisma/client-runtime-utils").Decimal;
-        dueDate: Date;
         tenantId: string;
+        dueDate: Date;
         leaseId: string;
+        paidDate: Date | null;
         method: import("@prisma/client").$Enums.PaymentMethod | null;
         reference: string | null;
         notes: string | null;
-        paidDate: Date | null;
     }>;
     recordPayment(id: string, body: {
         method: string;
@@ -413,10 +413,10 @@ export declare class PaymentsController {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            isActive: boolean;
             rentAmount: import("@prisma/client-runtime-utils").Decimal;
-            unitId: string;
+            isActive: boolean;
             tenantId: string;
+            unitId: string;
             startDate: Date;
             endDate: Date;
             deposit: import("@prisma/client-runtime-utils").Decimal;
@@ -427,13 +427,13 @@ export declare class PaymentsController {
         updatedAt: Date;
         status: import("@prisma/client").$Enums.PaymentStatus;
         amount: import("@prisma/client-runtime-utils").Decimal;
-        dueDate: Date;
         tenantId: string;
+        dueDate: Date;
         leaseId: string;
+        paidDate: Date | null;
         method: import("@prisma/client").$Enums.PaymentMethod | null;
         reference: string | null;
         notes: string | null;
-        paidDate: Date | null;
     }>;
     remove(id: string): Promise<{
         message: string;

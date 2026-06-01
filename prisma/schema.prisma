@@ -65,6 +65,14 @@ enum UnitStatus {
   RESERVED
 }
 
+enum ContractStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  REJECTED
+  EXPIRED
+}
+
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
@@ -81,6 +89,7 @@ model User {
   properties      Property[]
   tenantProfile   Tenant?
   notifications   Notification[]
+  contractsCreated Contract[] @relation("ContractCreator")
 
   @@map("users")
 }
@@ -166,6 +175,7 @@ model Tenant {
   leases          Lease[]
   payments        Payment[]
   maintenanceRequests MaintenanceRequest[]
+  contracts       Contract[]
 
   @@map("tenants")
 }
@@ -291,4 +301,48 @@ model VacantListing {
   updatedAt       DateTime @updatedAt
 
   @@map("vacant_listings")
+}
+
+model Contract {
+  id              String         @id @default(cuid())
+
+  // Contract details
+  title           String
+  content         String         @db.Text
+  
+  // Parties
+  landlordId      String
+  landlord        User           @relation("ContractCreator", fields: [landlordId], references: [id], onDelete: Cascade)
+  
+  tenantId        String
+  tenant          Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  // Property details
+  propertyName    String
+  unitNumber      String
+  address         String
+
+  // Financial terms
+  rentAmount      Decimal        @db.Decimal(10, 2)
+  deposit         Decimal        @db.Decimal(10, 2)
+  
+  // Lease period
+  startDate       DateTime
+  endDate         DateTime
+  duration        Int            // Duration in months
+
+  // Status and tracking
+  status          ContractStatus @default(DRAFT)
+  sentAt          DateTime?
+  acceptedAt      DateTime?
+  rejectedAt      DateTime?
+  rejectionReason String?
+
+  // Additional terms
+  terms           String[]       // Array of additional terms/clauses
+  
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@map("contracts")
 }

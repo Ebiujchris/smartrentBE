@@ -2,11 +2,9 @@ import { PropertiesService } from './properties.service';
 export declare class PropertiesController {
     private propertiesService;
     constructor(propertiesService: PropertiesService);
-    findAll(user: any): Promise<({
-        _count: {
-            units: number;
-        };
+    findAll(user: any): Promise<{
         units: {
+            rentAmount: number;
             id: string;
             createdAt: Date;
             updatedAt: Date;
@@ -16,10 +14,11 @@ export declare class PropertiesController {
             bedrooms: number | null;
             bathrooms: number | null;
             size: string | null;
-            rentAmount: import("@prisma/client-runtime-utils").Decimal;
             propertyId: string;
         }[];
-    } & {
+        _count: {
+            units: number;
+        };
         id: string;
         createdAt: Date;
         updatedAt: Date;
@@ -27,10 +26,13 @@ export declare class PropertiesController {
         address: string;
         description: string | null;
         ownerId: string;
-    })[]>;
+    }[]>;
     findOne(id: string, user: any): Promise<{
-        units: ({
-            leases: ({
+        units: {
+            rentAmount: number;
+            leases: {
+                rentAmount: number;
+                deposit: number;
                 tenant: {
                     user: {
                         email: string;
@@ -46,19 +48,15 @@ export declare class PropertiesController {
                     emergencyContact: string | null;
                     occupation: string | null;
                 };
-            } & {
                 id: string;
                 createdAt: Date;
                 updatedAt: Date;
                 isActive: boolean;
-                rentAmount: import("@prisma/client-runtime-utils").Decimal;
-                unitId: string;
                 tenantId: string;
+                unitId: string;
                 startDate: Date;
                 endDate: Date;
-                deposit: import("@prisma/client-runtime-utils").Decimal;
-            })[];
-        } & {
+            }[];
             id: string;
             createdAt: Date;
             updatedAt: Date;
@@ -68,10 +66,8 @@ export declare class PropertiesController {
             bedrooms: number | null;
             bathrooms: number | null;
             size: string | null;
-            rentAmount: import("@prisma/client-runtime-utils").Decimal;
             propertyId: string;
-        })[];
-    } & {
+        }[];
         id: string;
         createdAt: Date;
         updatedAt: Date;
@@ -101,8 +97,11 @@ export declare class PropertiesController {
     remove(id: string, user: any): Promise<{
         message: string;
     }>;
-    getUnits(id: string, user: any): Promise<({
-        leases: ({
+    getUnits(id: string, user: any): Promise<{
+        rentAmount: number;
+        leases: {
+            rentAmount: number;
+            deposit: number;
             tenant: {
                 user: {
                     email: string;
@@ -118,19 +117,15 @@ export declare class PropertiesController {
                 emergencyContact: string | null;
                 occupation: string | null;
             };
-        } & {
             id: string;
             createdAt: Date;
             updatedAt: Date;
             isActive: boolean;
-            rentAmount: import("@prisma/client-runtime-utils").Decimal;
-            unitId: string;
             tenantId: string;
+            unitId: string;
             startDate: Date;
             endDate: Date;
-            deposit: import("@prisma/client-runtime-utils").Decimal;
-        })[];
-    } & {
+        }[];
         id: string;
         createdAt: Date;
         updatedAt: Date;
@@ -140,9 +135,8 @@ export declare class PropertiesController {
         bedrooms: number | null;
         bathrooms: number | null;
         size: string | null;
-        rentAmount: import("@prisma/client-runtime-utils").Decimal;
         propertyId: string;
-    })[]>;
+    }[]>;
     createUnit(id: string, data: any, user: any): Promise<{
         id: string;
         createdAt: Date;
@@ -189,22 +183,22 @@ export declare class PropertiesController {
                 updatedAt: Date;
                 status: import("@prisma/client").$Enums.PaymentStatus;
                 amount: import("@prisma/client-runtime-utils").Decimal;
-                dueDate: Date;
                 tenantId: string;
+                dueDate: Date;
                 leaseId: string;
+                paidDate: Date | null;
                 method: import("@prisma/client").$Enums.PaymentMethod | null;
                 reference: string | null;
                 notes: string | null;
-                paidDate: Date | null;
             }[];
         } & {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            isActive: boolean;
             rentAmount: import("@prisma/client-runtime-utils").Decimal;
-            unitId: string;
+            isActive: boolean;
             tenantId: string;
+            unitId: string;
             startDate: Date;
             endDate: Date;
             deposit: import("@prisma/client-runtime-utils").Decimal;
@@ -215,9 +209,9 @@ export declare class PropertiesController {
             updatedAt: Date;
             status: import("@prisma/client").$Enums.MaintenanceStatus;
             description: string;
-            reportedAt: Date;
-            unitId: string;
             tenantId: string;
+            unitId: string;
+            reportedAt: Date;
             notes: string | null;
             title: string;
             priority: import("@prisma/client").$Enums.MaintenancePriority;

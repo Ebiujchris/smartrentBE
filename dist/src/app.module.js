@@ -24,6 +24,8 @@ const reports_module_1 = require("./reports/reports.module");
 const subscriptions_module_1 = require("./subscriptions/subscriptions.module");
 const units_module_1 = require("./units/units.module");
 const vacant_listings_module_1 = require("./vacant-listings/vacant-listings.module");
+const support_module_1 = require("./support/support.module");
+const contracts_module_1 = require("./contracts/contracts.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -46,6 +48,8 @@ exports.AppModule = AppModule = __decorate([
             subscriptions_module_1.SubscriptionsModule,
             units_module_1.UnitsModule,
             vacant_listings_module_1.VacantListingsModule,
+            support_module_1.SupportModule,
+            contracts_module_1.ContractsModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],

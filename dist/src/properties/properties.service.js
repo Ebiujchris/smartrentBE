@@ -18,7 +18,7 @@ let PropertiesService = class PropertiesService {
         this.prisma = prisma;
     }
     async findAll(userId) {
-        return this.prisma.property.findMany({
+        const properties = await this.prisma.property.findMany({
             where: { ownerId: userId },
             include: {
                 units: true,
@@ -28,6 +28,13 @@ let PropertiesService = class PropertiesService {
             },
             orderBy: { createdAt: 'desc' },
         });
+        return properties.map((property) => ({
+            ...property,
+            units: property.units.map((unit) => ({
+                ...unit,
+                rentAmount: unit.rentAmount.toNumber(),
+            })),
+        }));
     }
     async findOne(id, userId) {
         const property = await this.prisma.property.findUnique({
@@ -61,7 +68,18 @@ let PropertiesService = class PropertiesService {
         if (property.ownerId !== userId) {
             throw new common_1.ForbiddenException('Access denied');
         }
-        return property;
+        return {
+            ...property,
+            units: property.units.map((unit) => ({
+                ...unit,
+                rentAmount: unit.rentAmount.toNumber(),
+                leases: unit.leases.map((lease) => ({
+                    ...lease,
+                    rentAmount: lease.rentAmount.toNumber(),
+                    deposit: lease.deposit.toNumber(),
+                })),
+            })),
+        };
     }
     async create(data, userId) {
         return this.prisma.property.create({
@@ -117,7 +135,7 @@ let PropertiesService = class PropertiesService {
         if (property.ownerId !== userId) {
             throw new common_1.ForbiddenException('Access denied');
         }
-        return this.prisma.unit.findMany({
+        const units = await this.prisma.unit.findMany({
             where: { propertyId },
             include: {
                 leases: {
@@ -139,6 +157,15 @@ let PropertiesService = class PropertiesService {
             },
             orderBy: { unitNumber: 'asc' },
         });
+        return units.map((unit) => ({
+            ...unit,
+            rentAmount: unit.rentAmount.toNumber(),
+            leases: unit.leases.map((lease) => ({
+                ...lease,
+                rentAmount: lease.rentAmount.toNumber(),
+                deposit: lease.deposit.toNumber(),
+            })),
+        }));
     }
     async createUnit(propertyId, data, userId) {
         const property = await this.prisma.property.findUnique({

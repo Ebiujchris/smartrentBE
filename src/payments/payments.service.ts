@@ -142,7 +142,16 @@ export class PaymentsService {
       });
     }
 
-    return payments;
+    // Convert Decimal to number
+    return payments.map((payment) => ({
+      ...payment,
+      amount: payment.amount.toNumber(),
+      lease: {
+        ...payment.lease,
+        rentAmount: payment.lease.rentAmount.toNumber(),
+        deposit: payment.lease.deposit.toNumber(),
+      },
+    }));
   }
 
   async findByTenantId(tenantId: string) {
