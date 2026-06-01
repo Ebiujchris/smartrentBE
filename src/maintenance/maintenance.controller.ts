@@ -15,19 +15,19 @@ export class MaintenanceController {
   @Post()
   @Roles('LANDLORD', 'PROPERTY_MANAGER', 'ADMIN', 'TENANT')
   create(@CurrentUser() user: any, @Body() createMaintenanceDto: CreateMaintenanceDto) {
-    return this.maintenanceService.create(user.id, createMaintenanceDto);
+    return this.maintenanceService.create(user.id, user, createMaintenanceDto);
   }
 
   @Get()
   @Roles('LANDLORD', 'PROPERTY_MANAGER', 'ADMIN', 'TENANT')
   findAll(@CurrentUser() user: any) {
-    return this.maintenanceService.findAll(user.id);
+    return this.maintenanceService.findAll(user.id, user);
   }
 
   @Get(':id')
   @Roles('LANDLORD', 'PROPERTY_MANAGER', 'ADMIN', 'TENANT')
-  findOne(@Param('id') id: string) {
-    return this.maintenanceService.findOne(id);
+  findOne(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.maintenanceService.findOne(id, user);
   }
 
   @Patch(':id')

@@ -26,7 +26,7 @@ __decorate([
 ], CreateMaintenanceDto.prototype, "unitId", void 0);
 __decorate([
     (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsNotEmpty)(),
+    (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], CreateMaintenanceDto.prototype, "tenantId", void 0);
 __decorate([

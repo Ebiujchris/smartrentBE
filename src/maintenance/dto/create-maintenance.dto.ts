@@ -6,8 +6,8 @@ export class CreateMaintenanceDto {
   unitId: string;
 
   @IsString()
-  @IsNotEmpty()
-  tenantId: string;
+  @IsOptional()
+  tenantId?: string;
 
   @IsString()
   @IsNotEmpty()

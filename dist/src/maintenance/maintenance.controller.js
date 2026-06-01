@@ -27,13 +27,13 @@ let MaintenanceController = class MaintenanceController {
         this.maintenanceService = maintenanceService;
     }
     create(user, createMaintenanceDto) {
-        return this.maintenanceService.create(user.id, createMaintenanceDto);
+        return this.maintenanceService.create(user.id, user, createMaintenanceDto);
     }
     findAll(user) {
-        return this.maintenanceService.findAll(user.id);
+        return this.maintenanceService.findAll(user.id, user);
     }
-    findOne(id) {
-        return this.maintenanceService.findOne(id);
+    findOne(id, user) {
+        return this.maintenanceService.findOne(id, user);
     }
     update(id, updateMaintenanceDto) {
         return this.maintenanceService.update(id, updateMaintenanceDto);
@@ -67,8 +67,9 @@ __decorate([
     (0, common_1.Get)(':id'),
     (0, roles_decorator_1.Roles)('LANDLORD', 'PROPERTY_MANAGER', 'ADMIN', 'TENANT'),
     __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, current_user_decorator_1.CurrentUser)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", void 0)
 ], MaintenanceController.prototype, "findOne", null);
 __decorate([

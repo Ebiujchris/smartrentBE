@@ -52,8 +52,8 @@ export declare class PropertiesService {
                 updatedAt: Date;
                 isActive: boolean;
                 rentAmount: import("@prisma/client-runtime-utils").Decimal;
-                unitId: string;
                 tenantId: string;
+                unitId: string;
                 startDate: Date;
                 endDate: Date;
                 deposit: import("@prisma/client-runtime-utils").Decimal;
@@ -124,8 +124,8 @@ export declare class PropertiesService {
             updatedAt: Date;
             isActive: boolean;
             rentAmount: import("@prisma/client-runtime-utils").Decimal;
-            unitId: string;
             tenantId: string;
+            unitId: string;
             startDate: Date;
             endDate: Date;
             deposit: import("@prisma/client-runtime-utils").Decimal;
@@ -192,10 +192,10 @@ export declare class PropertiesService {
                 dueDate: Date;
                 tenantId: string;
                 leaseId: string;
+                paidDate: Date | null;
                 method: import("@prisma/client").$Enums.PaymentMethod | null;
                 reference: string | null;
                 notes: string | null;
-                paidDate: Date | null;
             }[];
         } & {
             id: string;
@@ -203,8 +203,8 @@ export declare class PropertiesService {
             updatedAt: Date;
             isActive: boolean;
             rentAmount: import("@prisma/client-runtime-utils").Decimal;
-            unitId: string;
             tenantId: string;
+            unitId: string;
             startDate: Date;
             endDate: Date;
             deposit: import("@prisma/client-runtime-utils").Decimal;
@@ -216,8 +216,8 @@ export declare class PropertiesService {
             status: import("@prisma/client").$Enums.MaintenanceStatus;
             description: string;
             reportedAt: Date;
-            unitId: string;
             tenantId: string;
+            unitId: string;
             notes: string | null;
             title: string;
             priority: import("@prisma/client").$Enums.MaintenancePriority;

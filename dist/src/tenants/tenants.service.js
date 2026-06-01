@@ -149,7 +149,16 @@ let TenantsService = class TenantsService {
         }
         return tenants;
     }
-    async findOne(id) {
+    async findOne(id, user) {
+        if (user && user.role === 'TENANT') {
+            const tenantRecord = await this.prisma.tenant.findUnique({
+                where: { id },
+                select: { userId: true },
+            });
+            if (!tenantRecord || tenantRecord.userId !== user.id) {
+                throw new common_1.NotFoundException('Tenant record not found or access denied');
+            }
+        }
         const tenant = await this.prisma.tenant.findUnique({
             where: { id },
             include: {
@@ -235,6 +244,46 @@ let TenantsService = class TenantsService {
         }
         await this.prisma.user.delete({ where: { id: userId } });
         return { message: 'Rollback successful — user and tenant profile removed' };
+    }
+    async getCurrentTenant(userId) {
+        const tenant = await this.prisma.tenant.findUnique({
+            where: { userId },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        email: true,
+                        fullName: true,
+                        phone: true,
+                        createdAt: true,
+                    },
+                },
+                leases: {
+                    include: {
+                        unit: {
+                            include: {
+                                property: true,
+                            },
+                        },
+                        payments: true,
+                    },
+                },
+                payments: {
+                    orderBy: {
+                        dueDate: 'desc',
+                    },
+                },
+                maintenanceRequests: {
+                    orderBy: {
+                        reportedAt: 'desc',
+                    },
+                },
+            },
+        });
+        if (!tenant) {
+            throw new common_1.NotFoundException('Tenant profile not found');
+        }
+        return tenant;
     }
 };
 exports.TenantsService = TenantsService;

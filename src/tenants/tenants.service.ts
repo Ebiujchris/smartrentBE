@@ -166,7 +166,18 @@ export class TenantsService {
     return tenants;
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, user?: any) {
+    // If user is TENANT, verify they can only access their own tenant record
+    if (user && user.role === 'TENANT') {
+      const tenantRecord = await this.prisma.tenant.findUnique({
+        where: { id },
+        select: { userId: true },
+      });
+      if (!tenantRecord || tenantRecord.userId !== user.id) {
+        throw new NotFoundException('Tenant record not found or access denied');
+      }
+    }
+
     const tenant = await this.prisma.tenant.findUnique({
       where: { id },
       include: {
@@ -269,5 +280,48 @@ export class TenantsService {
     }
     await this.prisma.user.delete({ where: { id: userId } });
     return { message: 'Rollback successful — user and tenant profile removed' };
+  }
+
+  async getCurrentTenant(userId: string) {
+    const tenant = await this.prisma.tenant.findUnique({
+      where: { userId },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            fullName: true,
+            phone: true,
+            createdAt: true,
+          },
+        },
+        leases: {
+          include: {
+            unit: {
+              include: {
+                property: true,
+              },
+            },
+            payments: true,
+          },
+        },
+        payments: {
+          orderBy: {
+            dueDate: 'desc',
+          },
+        },
+        maintenanceRequests: {
+          orderBy: {
+            reportedAt: 'desc',
+          },
+        },
+      },
+    });
+
+    if (!tenant) {
+      throw new NotFoundException('Tenant profile not found');
+    }
+
+    return tenant;
   }
 }

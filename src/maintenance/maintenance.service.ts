@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateMaintenanceDto } from './dto/create-maintenance.dto';
 import { UpdateMaintenanceDto } from './dto/update-maintenance.dto';
@@ -7,8 +7,23 @@ import { UpdateMaintenanceDto } from './dto/update-maintenance.dto';
 export class MaintenanceService {
   constructor(private prisma: PrismaService) {}
 
-  async create(userId: string, createMaintenanceDto: CreateMaintenanceDto) {
-    const { unitId, tenantId, title, description, priority } = createMaintenanceDto;
+  async create(userId: string, user: any, createMaintenanceDto: CreateMaintenanceDto) {
+    const { unitId, title, description, priority, tenantId } = createMaintenanceDto;
+
+    let finalTenantId: string;
+
+    if (user.role === 'TENANT') {
+      finalTenantId = user.tenantProfile.id;
+
+      const tenant = await this.prisma.tenant.findUnique({
+        where: { userId: user.id },
+      });
+      if (!tenant) {
+        throw new NotFoundException('Tenant profile not found');
+      }
+    } else {
+      finalTenantId = tenantId;
+    }
 
     const request = await this.prisma.maintenanceRequest.create({
       data: {
@@ -36,7 +51,40 @@ export class MaintenanceService {
     return request;
   }
 
-  async findAll(userId: string) {
+  async findAll(userId: string, user: any) {
+    if (user.role === 'TENANT') {
+      const tenant = await this.prisma.tenant.findUnique({
+        where: { userId },
+      });
+
+      if (!tenant) {
+        throw new NotFoundException('Tenant profile not found');
+      }
+
+      const requests = await this.prisma.maintenanceRequest.findMany({
+        where: {
+          tenantId: tenant.id,
+        },
+        include: {
+          unit: {
+            include: {
+              property: true,
+            },
+          },
+          tenant: {
+            include: {
+              user: true,
+            },
+          },
+        },
+        orderBy: {
+          reportedAt: 'desc',
+        },
+      });
+
+      return requests;
+    }
+
     const requests = await this.prisma.maintenanceRequest.findMany({
       include: {
         unit: {
@@ -58,7 +106,7 @@ export class MaintenanceService {
     return requests;
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, user: any) {
     const request = await this.prisma.maintenanceRequest.findUnique({
       where: { id },
       include: {
@@ -77,6 +125,10 @@ export class MaintenanceService {
 
     if (!request) {
       throw new NotFoundException('Maintenance request not found');
+    }
+
+    if (user.role === 'TENANT' && request.tenant.userId !== user.id) {
+      throw new ForbiddenException('You can only view your own maintenance requests');
     }
 
     return request;

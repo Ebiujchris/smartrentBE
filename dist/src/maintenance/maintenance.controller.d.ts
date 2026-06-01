@@ -5,79 +5,35 @@ export declare class MaintenanceController {
     private readonly maintenanceService;
     constructor(maintenanceService: MaintenanceService);
     create(user: any, createMaintenanceDto: CreateMaintenanceDto): Promise<{
-        unit: {
-            property: {
-                id: string;
-                createdAt: Date;
-                updatedAt: Date;
-                name: string;
-                address: string;
-                description: string | null;
-                ownerId: string;
-            };
-        } & {
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            status: import("@prisma/client").$Enums.UnitStatus;
-            unitNumber: string;
-            floor: string | null;
-            bedrooms: number | null;
-            bathrooms: number | null;
-            size: string | null;
-            rentAmount: import("@prisma/client-runtime-utils").Decimal;
-            propertyId: string;
-        };
-        tenant: {
-            user: {
-                email: string;
-                password: string;
-                fullName: string;
-                phone: string | null;
-                role: import("@prisma/client").$Enums.UserRole;
-                id: string;
-                createdAt: Date;
-                updatedAt: Date;
-            };
-        } & {
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            userId: string;
-            nationalId: string | null;
-            emergencyContact: string | null;
-            occupation: string | null;
-        };
-    } & {
         id: string;
+        title: string;
+        description: string;
+        priority: import("@prisma/client").$Enums.MaintenancePriority;
+        status: import("@prisma/client").$Enums.MaintenanceStatus;
+        reportedAt: Date;
+        resolvedAt: Date | null;
+        notes: string | null;
         createdAt: Date;
         updatedAt: Date;
-        status: import("@prisma/client").$Enums.MaintenanceStatus;
-        description: string;
-        reportedAt: Date;
         unitId: string;
         tenantId: string;
-        notes: string | null;
-        title: string;
-        priority: import("@prisma/client").$Enums.MaintenancePriority;
-        resolvedAt: Date | null;
     }>;
     findAll(user: any): Promise<({
         unit: {
             property: {
                 id: string;
+                description: string | null;
                 createdAt: Date;
                 updatedAt: Date;
                 name: string;
                 address: string;
-                description: string | null;
                 ownerId: string;
             };
         } & {
             id: string;
+            status: import("@prisma/client").$Enums.UnitStatus;
             createdAt: Date;
             updatedAt: Date;
-            status: import("@prisma/client").$Enums.UnitStatus;
             unitNumber: string;
             floor: string | null;
             bedrooms: number | null;
@@ -88,14 +44,14 @@ export declare class MaintenanceController {
         };
         tenant: {
             user: {
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
                 email: string;
                 password: string;
                 fullName: string;
                 phone: string | null;
                 role: import("@prisma/client").$Enums.UserRole;
-                id: string;
-                createdAt: Date;
-                updatedAt: Date;
             };
         } & {
             id: string;
@@ -108,34 +64,34 @@ export declare class MaintenanceController {
         };
     } & {
         id: string;
+        title: string;
+        description: string;
+        priority: import("@prisma/client").$Enums.MaintenancePriority;
+        status: import("@prisma/client").$Enums.MaintenanceStatus;
+        reportedAt: Date;
+        resolvedAt: Date | null;
+        notes: string | null;
         createdAt: Date;
         updatedAt: Date;
-        status: import("@prisma/client").$Enums.MaintenanceStatus;
-        description: string;
-        reportedAt: Date;
         unitId: string;
         tenantId: string;
-        notes: string | null;
-        title: string;
-        priority: import("@prisma/client").$Enums.MaintenancePriority;
-        resolvedAt: Date | null;
     })[]>;
-    findOne(id: string): Promise<{
+    findOne(id: string, user: any): Promise<{
         unit: {
             property: {
                 id: string;
+                description: string | null;
                 createdAt: Date;
                 updatedAt: Date;
                 name: string;
                 address: string;
-                description: string | null;
                 ownerId: string;
             };
         } & {
             id: string;
+            status: import("@prisma/client").$Enums.UnitStatus;
             createdAt: Date;
             updatedAt: Date;
-            status: import("@prisma/client").$Enums.UnitStatus;
             unitNumber: string;
             floor: string | null;
             bedrooms: number | null;
@@ -146,14 +102,14 @@ export declare class MaintenanceController {
         };
         tenant: {
             user: {
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
                 email: string;
                 password: string;
                 fullName: string;
                 phone: string | null;
                 role: import("@prisma/client").$Enums.UserRole;
-                id: string;
-                createdAt: Date;
-                updatedAt: Date;
             };
         } & {
             id: string;
@@ -166,34 +122,34 @@ export declare class MaintenanceController {
         };
     } & {
         id: string;
+        title: string;
+        description: string;
+        priority: import("@prisma/client").$Enums.MaintenancePriority;
+        status: import("@prisma/client").$Enums.MaintenanceStatus;
+        reportedAt: Date;
+        resolvedAt: Date | null;
+        notes: string | null;
         createdAt: Date;
         updatedAt: Date;
-        status: import("@prisma/client").$Enums.MaintenanceStatus;
-        description: string;
-        reportedAt: Date;
         unitId: string;
         tenantId: string;
-        notes: string | null;
-        title: string;
-        priority: import("@prisma/client").$Enums.MaintenancePriority;
-        resolvedAt: Date | null;
     }>;
     update(id: string, updateMaintenanceDto: UpdateMaintenanceDto): Promise<{
         unit: {
             property: {
                 id: string;
+                description: string | null;
                 createdAt: Date;
                 updatedAt: Date;
                 name: string;
                 address: string;
-                description: string | null;
                 ownerId: string;
             };
         } & {
             id: string;
+            status: import("@prisma/client").$Enums.UnitStatus;
             createdAt: Date;
             updatedAt: Date;
-            status: import("@prisma/client").$Enums.UnitStatus;
             unitNumber: string;
             floor: string | null;
             bedrooms: number | null;
@@ -204,14 +160,14 @@ export declare class MaintenanceController {
         };
         tenant: {
             user: {
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
                 email: string;
                 password: string;
                 fullName: string;
                 phone: string | null;
                 role: import("@prisma/client").$Enums.UserRole;
-                id: string;
-                createdAt: Date;
-                updatedAt: Date;
             };
         } & {
             id: string;
@@ -224,17 +180,17 @@ export declare class MaintenanceController {
         };
     } & {
         id: string;
+        title: string;
+        description: string;
+        priority: import("@prisma/client").$Enums.MaintenancePriority;
+        status: import("@prisma/client").$Enums.MaintenanceStatus;
+        reportedAt: Date;
+        resolvedAt: Date | null;
+        notes: string | null;
         createdAt: Date;
         updatedAt: Date;
-        status: import("@prisma/client").$Enums.MaintenanceStatus;
-        description: string;
-        reportedAt: Date;
         unitId: string;
         tenantId: string;
-        notes: string | null;
-        title: string;
-        priority: import("@prisma/client").$Enums.MaintenancePriority;
-        resolvedAt: Date | null;
     }>;
     updateStatus(id: string, body: {
         status: string;
@@ -243,18 +199,18 @@ export declare class MaintenanceController {
         unit: {
             property: {
                 id: string;
+                description: string | null;
                 createdAt: Date;
                 updatedAt: Date;
                 name: string;
                 address: string;
-                description: string | null;
                 ownerId: string;
             };
         } & {
             id: string;
+            status: import("@prisma/client").$Enums.UnitStatus;
             createdAt: Date;
             updatedAt: Date;
-            status: import("@prisma/client").$Enums.UnitStatus;
             unitNumber: string;
             floor: string | null;
             bedrooms: number | null;
@@ -265,14 +221,14 @@ export declare class MaintenanceController {
         };
         tenant: {
             user: {
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
                 email: string;
                 password: string;
                 fullName: string;
                 phone: string | null;
                 role: import("@prisma/client").$Enums.UserRole;
-                id: string;
-                createdAt: Date;
-                updatedAt: Date;
             };
         } & {
             id: string;
@@ -285,17 +241,17 @@ export declare class MaintenanceController {
         };
     } & {
         id: string;
+        title: string;
+        description: string;
+        priority: import("@prisma/client").$Enums.MaintenancePriority;
+        status: import("@prisma/client").$Enums.MaintenanceStatus;
+        reportedAt: Date;
+        resolvedAt: Date | null;
+        notes: string | null;
         createdAt: Date;
         updatedAt: Date;
-        status: import("@prisma/client").$Enums.MaintenanceStatus;
-        description: string;
-        reportedAt: Date;
         unitId: string;
         tenantId: string;
-        notes: string | null;
-        title: string;
-        priority: import("@prisma/client").$Enums.MaintenancePriority;
-        resolvedAt: Date | null;
     }>;
     remove(id: string): Promise<{
         message: string;

@@ -32,8 +32,8 @@ let TenantsController = class TenantsController {
     findAll(user) {
         return this.tenantsService.findAll(user.id);
     }
-    findOne(id) {
-        return this.tenantsService.findOne(id);
+    findOne(id, user) {
+        return this.tenantsService.findOne(id, user);
     }
     update(id, updateTenantDto) {
         return this.tenantsService.update(id, updateTenantDto);
@@ -43,6 +43,9 @@ let TenantsController = class TenantsController {
     }
     removeByUserId(userId) {
         return this.tenantsService.removeByUserId(userId);
+    }
+    getCurrentTenant(user) {
+        return this.tenantsService.getCurrentTenant(user.id);
     }
 };
 exports.TenantsController = TenantsController;
@@ -65,10 +68,11 @@ __decorate([
 ], TenantsController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)(':id'),
-    (0, roles_decorator_1.Roles)('LANDLORD', 'PROPERTY_MANAGER', 'ADMIN'),
+    (0, roles_decorator_1.Roles)('LANDLORD', 'PROPERTY_MANAGER', 'ADMIN', 'TENANT'),
     __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, current_user_decorator_1.CurrentUser)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", void 0)
 ], TenantsController.prototype, "findOne", null);
 __decorate([
@@ -96,6 +100,14 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], TenantsController.prototype, "removeByUserId", null);
+__decorate([
+    (0, common_1.Get)('current'),
+    (0, roles_decorator_1.Roles)('TENANT'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], TenantsController.prototype, "getCurrentTenant", null);
 exports.TenantsController = TenantsController = __decorate([
     (0, common_1.Controller)('tenants'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),

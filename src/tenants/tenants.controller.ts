@@ -25,9 +25,9 @@ export class TenantsController {
   }
 
   @Get(':id')
-  @Roles('LANDLORD', 'PROPERTY_MANAGER', 'ADMIN')
-  findOne(@Param('id') id: string) {
-    return this.tenantsService.findOne(id);
+  @Roles('LANDLORD', 'PROPERTY_MANAGER', 'ADMIN', 'TENANT')
+  findOne(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.tenantsService.findOne(id, user);
   }
 
   @Patch(':id')
@@ -46,5 +46,11 @@ export class TenantsController {
   @Roles('LANDLORD', 'PROPERTY_MANAGER', 'ADMIN')
   removeByUserId(@Param('userId') userId: string) {
     return this.tenantsService.removeByUserId(userId);
+  }
+
+  @Get('current')
+  @Roles('TENANT')
+  getCurrentTenant(@CurrentUser() user: any) {
+    return this.tenantsService.getCurrentTenant(user.id);
   }
 }

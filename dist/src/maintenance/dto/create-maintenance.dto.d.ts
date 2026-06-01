@@ -1,6 +1,6 @@
 export declare class CreateMaintenanceDto {
     unitId: string;
-    tenantId: string;
+    tenantId?: string;
     title: string;
     description: string;
     priority?: string;
