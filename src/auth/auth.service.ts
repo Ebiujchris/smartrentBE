@@ -46,7 +46,7 @@ export class AuthService {
           userId: user.id,
           plan: 'STARTER',
           status: 'TRIAL',
-          maxUnits: 15,
+          maxUnits: 5,
           trialEndsAt: trialEndDate,
           currentPeriodEnd: periodEnd,
           amount: 75000,
