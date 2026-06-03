@@ -113,10 +113,10 @@ export declare class LeasesController {
             tenantId: string;
             dueDate: Date;
             leaseId: string;
-            paidDate: Date | null;
             method: import("@prisma/client").$Enums.PaymentMethod | null;
             reference: string | null;
             notes: string | null;
+            paidDate: Date | null;
         }[];
     } & {
         id: string;
@@ -130,7 +130,7 @@ export declare class LeasesController {
         endDate: Date;
         deposit: import("@prisma/client-runtime-utils").Decimal;
     })[]>;
-    findOne(id: string): Promise<{
+    findOne(id: string, user: any): Promise<{
         unit: {
             property: {
                 id: string;
@@ -183,10 +183,10 @@ export declare class LeasesController {
             tenantId: string;
             dueDate: Date;
             leaseId: string;
-            paidDate: Date | null;
             method: import("@prisma/client").$Enums.PaymentMethod | null;
             reference: string | null;
             notes: string | null;
+            paidDate: Date | null;
         }[];
     } & {
         id: string;
@@ -200,7 +200,7 @@ export declare class LeasesController {
         endDate: Date;
         deposit: import("@prisma/client-runtime-utils").Decimal;
     }>;
-    update(id: string, updateLeaseDto: UpdateLeaseDto): Promise<{
+    update(id: string, updateLeaseDto: UpdateLeaseDto, user: any): Promise<{
         unit: {
             property: {
                 id: string;
@@ -256,7 +256,7 @@ export declare class LeasesController {
         endDate: Date;
         deposit: import("@prisma/client-runtime-utils").Decimal;
     }>;
-    terminate(id: string): Promise<{
+    terminate(id: string, user: any): Promise<{
         id: string;
         createdAt: Date;
         updatedAt: Date;
@@ -268,7 +268,7 @@ export declare class LeasesController {
         endDate: Date;
         deposit: import("@prisma/client-runtime-utils").Decimal;
     }>;
-    remove(id: string): Promise<{
+    remove(id: string, user: any): Promise<{
         message: string;
     }>;
 }

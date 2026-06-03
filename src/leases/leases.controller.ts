@@ -26,25 +26,25 @@ export class LeasesController {
 
   @Get(':id')
   @Roles('LANDLORD', 'PROPERTY_MANAGER', 'ADMIN')
-  findOne(@Param('id') id: string) {
-    return this.leasesService.findOne(id);
+  findOne(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.leasesService.findOne(id, user);
   }
 
   @Patch(':id')
   @Roles('LANDLORD', 'PROPERTY_MANAGER', 'ADMIN')
-  update(@Param('id') id: string, @Body() updateLeaseDto: UpdateLeaseDto) {
-    return this.leasesService.update(id, updateLeaseDto);
+  update(@Param('id') id: string, @Body() updateLeaseDto: UpdateLeaseDto, @CurrentUser() user: any) {
+    return this.leasesService.update(id, updateLeaseDto, user);
   }
 
   @Post(':id/terminate')
   @Roles('LANDLORD', 'PROPERTY_MANAGER', 'ADMIN')
-  terminate(@Param('id') id: string) {
-    return this.leasesService.terminate(id);
+  terminate(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.leasesService.terminate(id, user);
   }
 
   @Delete(':id')
   @Roles('LANDLORD', 'PROPERTY_MANAGER', 'ADMIN')
-  remove(@Param('id') id: string) {
-    return this.leasesService.remove(id);
+  remove(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.leasesService.remove(id, user);
   }
 }

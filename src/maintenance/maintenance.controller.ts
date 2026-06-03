@@ -32,8 +32,8 @@ export class MaintenanceController {
 
   @Patch(':id')
   @Roles('LANDLORD', 'PROPERTY_MANAGER', 'ADMIN')
-  update(@Param('id') id: string, @Body() updateMaintenanceDto: UpdateMaintenanceDto) {
-    return this.maintenanceService.update(id, updateMaintenanceDto);
+  update(@Param('id') id: string, @Body() updateMaintenanceDto: UpdateMaintenanceDto, @CurrentUser() user: any) {
+    return this.maintenanceService.update(id, updateMaintenanceDto, user);
   }
 
   @Post(':id/status')
@@ -41,13 +41,14 @@ export class MaintenanceController {
   updateStatus(
     @Param('id') id: string,
     @Body() body: { status: string; notes?: string },
+    @CurrentUser() user: any
   ) {
-    return this.maintenanceService.updateStatus(id, body.status, body.notes);
+    return this.maintenanceService.updateStatus(id, body.status, body.notes, user);
   }
 
   @Delete(':id')
   @Roles('LANDLORD', 'PROPERTY_MANAGER', 'ADMIN')
-  remove(@Param('id') id: string) {
-    return this.maintenanceService.remove(id);
+  remove(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.maintenanceService.remove(id, user);
   }
 }

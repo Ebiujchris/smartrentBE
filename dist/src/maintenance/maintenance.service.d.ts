@@ -178,7 +178,7 @@ export declare class MaintenanceService {
         priority: import("@prisma/client").$Enums.MaintenancePriority;
         resolvedAt: Date | null;
     }>;
-    update(id: string, updateMaintenanceDto: UpdateMaintenanceDto): Promise<{
+    update(id: string, updateMaintenanceDto: UpdateMaintenanceDto, user: any): Promise<{
         unit: {
             property: {
                 id: string;
@@ -236,7 +236,7 @@ export declare class MaintenanceService {
         priority: import("@prisma/client").$Enums.MaintenancePriority;
         resolvedAt: Date | null;
     }>;
-    updateStatus(id: string, status: string, notes?: string): Promise<{
+    updateStatus(id: string, status: string, notes?: string, user?: any): Promise<{
         unit: {
             property: {
                 id: string;
@@ -294,7 +294,7 @@ export declare class MaintenanceService {
         priority: import("@prisma/client").$Enums.MaintenancePriority;
         resolvedAt: Date | null;
     }>;
-    remove(id: string): Promise<{
+    remove(id: string, user: any): Promise<{
         message: string;
     }>;
 }

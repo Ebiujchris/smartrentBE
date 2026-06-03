@@ -8,28 +8,53 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var PrismaService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PrismaService = void 0;
 const common_1 = require("@nestjs/common");
 const client_1 = require("@prisma/client");
 const adapter_pg_1 = require("@prisma/adapter-pg");
 const pg_1 = require("pg");
-let PrismaService = class PrismaService extends client_1.PrismaClient {
+let PrismaService = PrismaService_1 = class PrismaService extends client_1.PrismaClient {
+    logger = new common_1.Logger(PrismaService_1.name);
+    pool;
     constructor() {
         const connectionString = process.env.DATABASE_URL;
-        const pool = new pg_1.Pool({ connectionString });
+        const pool = new pg_1.Pool({
+            connectionString,
+            max: 10,
+            idleTimeoutMillis: 30000,
+            connectionTimeoutMillis: 10000,
+            keepAlive: true,
+            keepAliveInitialDelayMillis: 10000,
+            ssl: {
+                rejectUnauthorized: false,
+            },
+        });
+        pool.on('error', (err) => {
+            console.error('[PrismaService] Unexpected pool error:', err.message);
+        });
         const adapter = new adapter_pg_1.PrismaPg(pool);
         super({ adapter });
+        this.pool = pool;
     }
     async onModuleInit() {
-        await this.$connect();
+        try {
+            await this.$connect();
+            this.logger.log('Database connected successfully');
+        }
+        catch (error) {
+            this.logger.error('Failed to connect to database:', error);
+            throw error;
+        }
     }
     async onModuleDestroy() {
         await this.$disconnect();
+        await this.pool.end();
     }
 };
 exports.PrismaService = PrismaService;
-exports.PrismaService = PrismaService = __decorate([
+exports.PrismaService = PrismaService = PrismaService_1 = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [])
 ], PrismaService);

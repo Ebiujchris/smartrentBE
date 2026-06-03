@@ -32,17 +32,17 @@ let LeasesController = class LeasesController {
     findAll(user) {
         return this.leasesService.findAll(user.id);
     }
-    findOne(id) {
-        return this.leasesService.findOne(id);
+    findOne(id, user) {
+        return this.leasesService.findOne(id, user);
     }
-    update(id, updateLeaseDto) {
-        return this.leasesService.update(id, updateLeaseDto);
+    update(id, updateLeaseDto, user) {
+        return this.leasesService.update(id, updateLeaseDto, user);
     }
-    terminate(id) {
-        return this.leasesService.terminate(id);
+    terminate(id, user) {
+        return this.leasesService.terminate(id, user);
     }
-    remove(id) {
-        return this.leasesService.remove(id);
+    remove(id, user) {
+        return this.leasesService.remove(id, user);
     }
 };
 exports.LeasesController = LeasesController;
@@ -67,8 +67,9 @@ __decorate([
     (0, common_1.Get)(':id'),
     (0, roles_decorator_1.Roles)('LANDLORD', 'PROPERTY_MANAGER', 'ADMIN'),
     __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, current_user_decorator_1.CurrentUser)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", void 0)
 ], LeasesController.prototype, "findOne", null);
 __decorate([
@@ -76,24 +77,27 @@ __decorate([
     (0, roles_decorator_1.Roles)('LANDLORD', 'PROPERTY_MANAGER', 'ADMIN'),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
+    __param(2, (0, current_user_decorator_1.CurrentUser)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, update_lease_dto_1.UpdateLeaseDto]),
+    __metadata("design:paramtypes", [String, update_lease_dto_1.UpdateLeaseDto, Object]),
     __metadata("design:returntype", void 0)
 ], LeasesController.prototype, "update", null);
 __decorate([
     (0, common_1.Post)(':id/terminate'),
     (0, roles_decorator_1.Roles)('LANDLORD', 'PROPERTY_MANAGER', 'ADMIN'),
     __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, current_user_decorator_1.CurrentUser)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", void 0)
 ], LeasesController.prototype, "terminate", null);
 __decorate([
     (0, common_1.Delete)(':id'),
     (0, roles_decorator_1.Roles)('LANDLORD', 'PROPERTY_MANAGER', 'ADMIN'),
     __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, current_user_decorator_1.CurrentUser)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", void 0)
 ], LeasesController.prototype, "remove", null);
 exports.LeasesController = LeasesController = __decorate([

@@ -90,6 +90,13 @@ let MaintenanceService = class MaintenanceService {
             return requests;
         }
         const requests = await this.prisma.maintenanceRequest.findMany({
+            where: {
+                unit: {
+                    property: {
+                        ownerId: userId,
+                    },
+                },
+            },
             include: {
                 unit: {
                     include: {
@@ -130,14 +137,27 @@ let MaintenanceService = class MaintenanceService {
         if (user.role === 'TENANT' && request.tenant.userId !== user.id) {
             throw new common_1.ForbiddenException('You can only view your own maintenance requests');
         }
+        if ((user.role === 'LANDLORD' || user.role === 'PROPERTY_MANAGER') && request.unit.property.ownerId !== user.id) {
+            throw new common_1.ForbiddenException('Access denied');
+        }
         return request;
     }
-    async update(id, updateMaintenanceDto) {
+    async update(id, updateMaintenanceDto, user) {
         const request = await this.prisma.maintenanceRequest.findUnique({
             where: { id },
+            include: {
+                unit: {
+                    include: {
+                        property: true,
+                    },
+                },
+            },
         });
         if (!request) {
             throw new common_1.NotFoundException('Maintenance request not found');
+        }
+        if ((user.role === 'LANDLORD' || user.role === 'PROPERTY_MANAGER') && request.unit.property.ownerId !== user.id) {
+            throw new common_1.ForbiddenException('Access denied');
         }
         const updated = await this.prisma.maintenanceRequest.update({
             where: { id },
@@ -164,12 +184,22 @@ let MaintenanceService = class MaintenanceService {
         });
         return updated;
     }
-    async updateStatus(id, status, notes) {
+    async updateStatus(id, status, notes, user) {
         const request = await this.prisma.maintenanceRequest.findUnique({
             where: { id },
+            include: {
+                unit: {
+                    include: {
+                        property: true,
+                    },
+                },
+            },
         });
         if (!request) {
             throw new common_1.NotFoundException('Maintenance request not found');
+        }
+        if (user && (user.role === 'LANDLORD' || user.role === 'PROPERTY_MANAGER') && request.unit.property.ownerId !== user.id) {
+            throw new common_1.ForbiddenException('Access denied');
         }
         const updated = await this.prisma.maintenanceRequest.update({
             where: { id },
@@ -193,12 +223,22 @@ let MaintenanceService = class MaintenanceService {
         });
         return updated;
     }
-    async remove(id) {
+    async remove(id, user) {
         const request = await this.prisma.maintenanceRequest.findUnique({
             where: { id },
+            include: {
+                unit: {
+                    include: {
+                        property: true,
+                    },
+                },
+            },
         });
         if (!request) {
             throw new common_1.NotFoundException('Maintenance request not found');
+        }
+        if ((user.role === 'LANDLORD' || user.role === 'PROPERTY_MANAGER') && request.unit.property.ownerId !== user.id) {
+            throw new common_1.ForbiddenException('Access denied');
         }
         await this.prisma.maintenanceRequest.delete({
             where: { id },

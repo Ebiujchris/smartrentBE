@@ -67,7 +67,24 @@ let LeasesService = class LeasesService {
         return lease;
     }
     async findAll(userId) {
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+        });
+        if (!user) {
+            throw new common_1.NotFoundException('User not found');
+        }
+        let whereClause = {};
+        if (user.role === 'LANDLORD' || user.role === 'PROPERTY_MANAGER') {
+            whereClause = {
+                unit: {
+                    property: {
+                        ownerId: userId,
+                    },
+                },
+            };
+        }
         const leases = await this.prisma.lease.findMany({
+            where: whereClause,
             include: {
                 tenant: {
                     include: {
@@ -87,7 +104,7 @@ let LeasesService = class LeasesService {
         });
         return leases;
     }
-    async findOne(id) {
+    async findOne(id, user) {
         const lease = await this.prisma.lease.findUnique({
             where: { id },
             include: {
@@ -111,14 +128,27 @@ let LeasesService = class LeasesService {
         if (!lease) {
             throw new common_1.NotFoundException('Lease not found');
         }
+        if ((user.role === 'LANDLORD' || user.role === 'PROPERTY_MANAGER') && lease.unit.property.ownerId !== user.id) {
+            throw new common_1.ForbiddenException('Access denied');
+        }
         return lease;
     }
-    async update(id, updateLeaseDto) {
+    async update(id, updateLeaseDto, user) {
         const lease = await this.prisma.lease.findUnique({
             where: { id },
+            include: {
+                unit: {
+                    include: {
+                        property: true,
+                    },
+                },
+            },
         });
         if (!lease) {
             throw new common_1.NotFoundException('Lease not found');
+        }
+        if ((user.role === 'LANDLORD' || user.role === 'PROPERTY_MANAGER') && lease.unit.property.ownerId !== user.id) {
+            throw new common_1.ForbiddenException('Access denied');
         }
         const updated = await this.prisma.lease.update({
             where: { id },
@@ -146,12 +176,22 @@ let LeasesService = class LeasesService {
         });
         return updated;
     }
-    async terminate(id) {
+    async terminate(id, user) {
         const lease = await this.prisma.lease.findUnique({
             where: { id },
+            include: {
+                unit: {
+                    include: {
+                        property: true,
+                    },
+                },
+            },
         });
         if (!lease) {
             throw new common_1.NotFoundException('Lease not found');
+        }
+        if ((user.role === 'LANDLORD' || user.role === 'PROPERTY_MANAGER') && lease.unit.property.ownerId !== user.id) {
+            throw new common_1.ForbiddenException('Access denied');
         }
         const updated = await this.prisma.lease.update({
             where: { id },
@@ -163,12 +203,22 @@ let LeasesService = class LeasesService {
         });
         return updated;
     }
-    async remove(id) {
+    async remove(id, user) {
         const lease = await this.prisma.lease.findUnique({
             where: { id },
+            include: {
+                unit: {
+                    include: {
+                        property: true,
+                    },
+                },
+            },
         });
         if (!lease) {
             throw new common_1.NotFoundException('Lease not found');
+        }
+        if ((user.role === 'LANDLORD' || user.role === 'PROPERTY_MANAGER') && lease.unit.property.ownerId !== user.id) {
+            throw new common_1.ForbiddenException('Access denied');
         }
         await this.prisma.lease.delete({
             where: { id },

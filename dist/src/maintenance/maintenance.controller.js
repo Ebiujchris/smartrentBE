@@ -35,14 +35,14 @@ let MaintenanceController = class MaintenanceController {
     findOne(id, user) {
         return this.maintenanceService.findOne(id, user);
     }
-    update(id, updateMaintenanceDto) {
-        return this.maintenanceService.update(id, updateMaintenanceDto);
+    update(id, updateMaintenanceDto, user) {
+        return this.maintenanceService.update(id, updateMaintenanceDto, user);
     }
-    updateStatus(id, body) {
-        return this.maintenanceService.updateStatus(id, body.status, body.notes);
+    updateStatus(id, body, user) {
+        return this.maintenanceService.updateStatus(id, body.status, body.notes, user);
     }
-    remove(id) {
-        return this.maintenanceService.remove(id);
+    remove(id, user) {
+        return this.maintenanceService.remove(id, user);
     }
 };
 exports.MaintenanceController = MaintenanceController;
@@ -77,8 +77,9 @@ __decorate([
     (0, roles_decorator_1.Roles)('LANDLORD', 'PROPERTY_MANAGER', 'ADMIN'),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
+    __param(2, (0, current_user_decorator_1.CurrentUser)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, update_maintenance_dto_1.UpdateMaintenanceDto]),
+    __metadata("design:paramtypes", [String, update_maintenance_dto_1.UpdateMaintenanceDto, Object]),
     __metadata("design:returntype", void 0)
 ], MaintenanceController.prototype, "update", null);
 __decorate([
@@ -86,16 +87,18 @@ __decorate([
     (0, roles_decorator_1.Roles)('LANDLORD', 'PROPERTY_MANAGER', 'ADMIN'),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
+    __param(2, (0, current_user_decorator_1.CurrentUser)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:paramtypes", [String, Object, Object]),
     __metadata("design:returntype", void 0)
 ], MaintenanceController.prototype, "updateStatus", null);
 __decorate([
     (0, common_1.Delete)(':id'),
     (0, roles_decorator_1.Roles)('LANDLORD', 'PROPERTY_MANAGER', 'ADMIN'),
     __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, current_user_decorator_1.CurrentUser)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", void 0)
 ], MaintenanceController.prototype, "remove", null);
 exports.MaintenanceController = MaintenanceController = __decorate([

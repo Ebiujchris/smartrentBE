@@ -12,21 +12,21 @@ export declare class NotificationsController {
     }[]>;
     markAsRead(id: string, user: any): Promise<{
         id: string;
+        createdAt: Date;
         userId: string;
         title: string;
         message: string;
         type: string;
         isRead: boolean;
-        createdAt: Date;
     }>;
     markAllAsRead(user: any): Promise<import("@prisma/client").Prisma.BatchPayload>;
     deleteNotification(id: string, user: any): Promise<{
         id: string;
+        createdAt: Date;
         userId: string;
         title: string;
         message: string;
         type: string;
         isRead: boolean;
-        createdAt: Date;
     }>;
 }
