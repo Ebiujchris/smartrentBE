@@ -24,6 +24,13 @@ export class TenantsController {
     return this.tenantsService.findAll(user.id);
   }
 
+  // Specific routes MUST come before parametrized routes
+  @Get('current')
+  @Roles('TENANT')
+  getCurrentTenant(@CurrentUser() user: any) {
+    return this.tenantsService.getCurrentTenant(user.id);
+  }
+
   @Get(':id')
   @Roles('LANDLORD', 'PROPERTY_MANAGER', 'ADMIN', 'TENANT')
   findOne(@Param('id') id: string, @CurrentUser() user: any) {
@@ -46,11 +53,5 @@ export class TenantsController {
   @Roles('LANDLORD', 'PROPERTY_MANAGER', 'ADMIN')
   removeByUserId(@Param('userId') userId: string) {
     return this.tenantsService.removeByUserId(userId);
-  }
-
-  @Get('current')
-  @Roles('TENANT')
-  getCurrentTenant(@CurrentUser() user: any) {
-    return this.tenantsService.getCurrentTenant(user.id);
   }
 }
