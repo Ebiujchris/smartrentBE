@@ -21,7 +21,7 @@ export class TransformInterceptor<T>
   ): Observable<Response<T>> {
     return next.handle().pipe(
       map((data) => {
-        // Remove sensitive fields from response
+        // Remove sensitive fields and serialize dates properly
         return this.sanitizeResponse(data);
       }),
     );
@@ -29,6 +29,11 @@ export class TransformInterceptor<T>
 
   private sanitizeResponse(data: any): any {
     if (!data) return data;
+
+    // Handle Date objects - convert to ISO string
+    if (data instanceof Date) {
+      return data.toISOString();
+    }
 
     // Handle Prisma Decimal - check if it has toNumber method
     if (data && typeof data === 'object' && typeof data.toNumber === 'function') {
@@ -57,7 +62,7 @@ export class TransformInterceptor<T>
         }
       });
 
-      // Convert all fields recursively
+      // Convert all fields recursively (including dates)
       Object.keys(sanitized).forEach((key) => {
         sanitized[key] = this.sanitizeResponse(sanitized[key]);
       });
