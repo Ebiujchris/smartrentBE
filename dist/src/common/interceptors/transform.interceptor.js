@@ -18,6 +18,9 @@ let TransformInterceptor = class TransformInterceptor {
     sanitizeResponse(data) {
         if (!data)
             return data;
+        if (data instanceof Date) {
+            return data.toISOString();
+        }
         if (data && typeof data === 'object' && typeof data.toNumber === 'function') {
             return data.toNumber();
         }

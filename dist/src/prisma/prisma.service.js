@@ -24,7 +24,7 @@ let PrismaService = PrismaService_1 = class PrismaService extends client_1.Prism
             connectionString,
             max: 10,
             idleTimeoutMillis: 30000,
-            connectionTimeoutMillis: 10000,
+            connectionTimeoutMillis: 60000,
             keepAlive: true,
             keepAliveInitialDelayMillis: 10000,
             ssl: {

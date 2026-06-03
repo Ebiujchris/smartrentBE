@@ -14,7 +14,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       connectionString,
       max: 10,                    // Maximum pool size
       idleTimeoutMillis: 30000,   // Close idle connections after 30s
-      connectionTimeoutMillis: 10000, // Fail connection attempt after 10s
+      connectionTimeoutMillis: 60000, // Fail connection attempt after 60s (increased for Neon cold start)
       keepAlive: true,            // Enable TCP keepalive
       keepAliveInitialDelayMillis: 10000, // Start keepalive after 10s
       ssl: {
