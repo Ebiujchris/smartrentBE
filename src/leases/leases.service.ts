@@ -16,6 +16,8 @@ export class LeasesService {
     const { tenantId, unitId, startDate, endDate, rentAmount, deposit } =
       createLeaseDto;
 
+    console.log('Creating lease with dates:', { startDate, endDate, type: typeof startDate });
+
     // Check if unit exists and is vacant
     const unit = await this.prisma.unit.findUnique({
       where: { id: unitId },
@@ -38,14 +40,25 @@ export class LeasesService {
       throw new NotFoundException('Tenant not found');
     }
 
+    // Convert dates
+    const parsedStartDate = new Date(startDate);
+    const parsedEndDate = new Date(endDate);
+
+    console.log('Parsed dates:', { 
+      parsedStartDate, 
+      parsedEndDate,
+      startDateValid: !isNaN(parsedStartDate.getTime()),
+      endDateValid: !isNaN(parsedEndDate.getTime())
+    });
+
     // Create lease and update unit status atomically
     const lease = await this.prisma.$transaction(async (tx) => {
       const createdLease = await tx.lease.create({
         data: {
           tenantId,
           unitId,
-          startDate: new Date(startDate),
-          endDate: new Date(endDate),
+          startDate: parsedStartDate,
+          endDate: parsedEndDate,
           rentAmount,
           deposit,
           isActive: true,
@@ -62,6 +75,12 @@ export class LeasesService {
             },
           },
         },
+      });
+
+      console.log('Lease created:', { 
+        id: createdLease.id, 
+        startDate: createdLease.startDate,
+        endDate: createdLease.endDate 
       });
 
       await tx.unit.update({
