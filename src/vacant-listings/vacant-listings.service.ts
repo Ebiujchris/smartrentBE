@@ -13,6 +13,24 @@ export class VacantListingsService {
   constructor(private prisma: PrismaService) {}
 
   async create(userId: string, createDto: CreateVacantListingDto) {
+    // Check user's subscription plan - only Professional and Premium can advertise
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        subscription: true,
+      },
+    });
+
+    if (!user?.subscription) {
+      throw new ForbiddenException('No active subscription found');
+    }
+
+    if (user.subscription.plan === 'STARTER') {
+      throw new ForbiddenException(
+        'Vacancy advertising is only available on Professional and Premium plans. Please upgrade your subscription.',
+      );
+    }
+
     // Verify the unit exists and belongs to the landlord
     const unit = await this.prisma.unit.findUnique({
       where: { id: createDto.unitId },
@@ -132,6 +150,24 @@ export class VacantListingsService {
   }
 
   async findMyListings(userId: string) {
+    // Check user's subscription plan
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        subscription: true,
+      },
+    });
+
+    if (!user?.subscription) {
+      throw new ForbiddenException('No active subscription found');
+    }
+
+    if (user.subscription.plan === 'STARTER') {
+      throw new ForbiddenException(
+        'Vacancy advertising is only available on Professional and Premium plans.',
+      );
+    }
+
     // Get all listings for units owned by this user
     const listings = await this.prisma.vacantListing.findMany({
       where: {
