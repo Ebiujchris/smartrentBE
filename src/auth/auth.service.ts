@@ -68,13 +68,29 @@ export class AuthService {
   }
 
   async login(loginDto: LoginDto) {
-    const user = await this.prisma.user.findUnique({
-      where: { email: loginDto.email },
-      include: {
-        subscription: true,
-        tenantProfile: true,
-      },
-    });
+    // Check if login identifier is email or phone number
+    const isEmail = loginDto.email.includes('@');
+    
+    let user;
+    if (isEmail) {
+      user = await this.prisma.user.findUnique({
+        where: { email: loginDto.email },
+        include: {
+          subscription: true,
+          tenantProfile: true,
+        },
+      });
+    } else {
+      // Login with phone number
+      const cleanedPhone = loginDto.email.replace(/\s+/g, '');
+      user = await this.prisma.user.findFirst({
+        where: { phone: cleanedPhone },
+        include: {
+          subscription: true,
+          tenantProfile: true,
+        },
+      });
+    }
 
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
