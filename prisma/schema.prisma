@@ -300,7 +300,35 @@ model VacantListing {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
+  // Relations
+  contactPurchases ContactPurchase[]
+
   @@map("vacant_listings")
+}
+
+model ContactPurchase {
+  id              String   @id @default(cuid())
+
+  listingId       String
+  listing         VacantListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  // Buyer information (can be anonymous or logged in user)
+  buyerPhone      String
+  buyerEmail      String?
+  buyerName       String?
+
+  // Payment details
+  amountPaid      Decimal  @db.Decimal(10, 2) @default(10000)
+  paymentMethod   String   // MTN, AIRTEL
+  transactionId   String?
+
+  // Access tracking
+  purchasedAt     DateTime @default(now())
+  expiresAt       DateTime? // Optional expiry (e.g., 30 days access)
+  lastAccessedAt  DateTime?
+
+  @@index([buyerPhone, listingId])
+  @@map("contact_purchases")
 }
 
 model Contract {

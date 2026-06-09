@@ -17,6 +17,7 @@ import { UnitsModule } from './units/units.module';
 import { VacantListingsModule } from './vacant-listings/vacant-listings.module';
 import { SupportModule } from './support/support.module';
 import { ContractsModule } from './contracts/contracts.module';
+import { ContactPurchasesModule } from './contact-purchases/contact-purchases.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { ContractsModule } from './contracts/contracts.module';
     VacantListingsModule,
     SupportModule,
     ContractsModule,
+    ContactPurchasesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
