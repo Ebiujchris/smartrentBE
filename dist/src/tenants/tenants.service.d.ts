@@ -66,10 +66,10 @@ export declare class TenantsService {
                 tenantId: string;
                 dueDate: Date;
                 leaseId: string;
+                paidDate: Date | null;
                 method: import("@prisma/client").$Enums.PaymentMethod | null;
                 reference: string | null;
                 notes: string | null;
-                paidDate: Date | null;
             }[];
         } & {
             id: string;
@@ -92,10 +92,10 @@ export declare class TenantsService {
             tenantId: string;
             dueDate: Date;
             leaseId: string;
+            paidDate: Date | null;
             method: import("@prisma/client").$Enums.PaymentMethod | null;
             reference: string | null;
             notes: string | null;
-            paidDate: Date | null;
         }[];
         maintenanceRequests: {
             id: string;
@@ -187,10 +187,10 @@ export declare class TenantsService {
                 tenantId: string;
                 dueDate: Date;
                 leaseId: string;
+                paidDate: Date | null;
                 method: import("@prisma/client").$Enums.PaymentMethod | null;
                 reference: string | null;
                 notes: string | null;
-                paidDate: Date | null;
             }[];
         } & {
             id: string;
@@ -213,10 +213,10 @@ export declare class TenantsService {
             tenantId: string;
             dueDate: Date;
             leaseId: string;
+            paidDate: Date | null;
             method: import("@prisma/client").$Enums.PaymentMethod | null;
             reference: string | null;
             notes: string | null;
-            paidDate: Date | null;
         }[];
         maintenanceRequests: {
             id: string;

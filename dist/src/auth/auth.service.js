@@ -81,7 +81,7 @@ let AuthService = class AuthService {
                     userId: user.id,
                     plan: 'STARTER',
                     status: 'TRIAL',
-                    maxUnits: 15,
+                    maxUnits: 7,
                     trialEndsAt: trialEndDate,
                     currentPeriodEnd: periodEnd,
                     amount: 75000,
@@ -100,13 +100,27 @@ let AuthService = class AuthService {
         };
     }
     async login(loginDto) {
-        const user = await this.prisma.user.findUnique({
-            where: { email: loginDto.email },
-            include: {
-                subscription: true,
-                tenantProfile: true,
-            },
-        });
+        const isEmail = loginDto.email.includes('@');
+        let user;
+        if (isEmail) {
+            user = await this.prisma.user.findUnique({
+                where: { email: loginDto.email },
+                include: {
+                    subscription: true,
+                    tenantProfile: true,
+                },
+            });
+        }
+        else {
+            const cleanedPhone = loginDto.email.replace(/\s+/g, '');
+            user = await this.prisma.user.findFirst({
+                where: { phone: cleanedPhone },
+                include: {
+                    subscription: true,
+                    tenantProfile: true,
+                },
+            });
+        }
         if (!user) {
             throw new common_1.UnauthorizedException('Invalid credentials');
         }

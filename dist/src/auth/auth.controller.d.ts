@@ -15,32 +15,12 @@ export declare class AuthController {
     }>;
     login(loginDto: LoginDto): Promise<{
         user: {
-            id: string;
-            email: string;
-            fullName: string;
-            role: import("@prisma/client").$Enums.UserRole;
-            subscription: {
-                id: string;
-                createdAt: Date;
-                updatedAt: Date;
-                plan: import("@prisma/client").$Enums.SubscriptionPlan;
-                status: import("@prisma/client").$Enums.SubscriptionStatus;
-                maxUnits: number;
-                trialEndsAt: Date | null;
-                currentPeriodStart: Date;
-                currentPeriodEnd: Date;
-                amount: import("@prisma/client-runtime-utils").Decimal;
-                userId: string;
-            } | null;
-            tenantProfile: {
-                id: string;
-                createdAt: Date;
-                updatedAt: Date;
-                userId: string;
-                nationalId: string | null;
-                emergencyContact: string | null;
-                occupation: string | null;
-            } | null;
+            id: any;
+            email: any;
+            fullName: any;
+            role: any;
+            subscription: any;
+            tenantProfile: any;
         };
         token: string;
     }>;

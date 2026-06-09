@@ -42,20 +42,20 @@ let SubscriptionsService = class SubscriptionsService {
         if (!subscription) {
             throw new common_1.NotFoundException('Subscription not found');
         }
-        let maxUnits = 10;
+        let maxUnits = 7;
         let amount = 75000;
         switch (updateDto.plan) {
             case 'STARTER':
-                maxUnits = 10;
+                maxUnits = 7;
                 amount = 75000;
                 break;
             case 'PROFESSIONAL':
-                maxUnits = 20;
+                maxUnits = 30;
                 amount = 150000;
                 break;
             case 'PREMIUM':
-                maxUnits = 999;
-                amount = 200000;
+                maxUnits = 9999;
+                amount = 300000;
                 break;
         }
         const updated = await this.prisma.subscription.update({
@@ -111,10 +111,35 @@ let SubscriptionsService = class SubscriptionsService {
                     data: { status: 'EXPIRED' },
                 });
             }
+            const daysRemaining = Math.ceil((subscription.trialEndsAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
             return {
                 expired,
                 trialEndsAt: subscription.trialEndsAt,
-                daysRemaining: Math.ceil((subscription.trialEndsAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)),
+                daysRemaining: Math.max(0, daysRemaining),
+                isExpiringSoon: daysRemaining <= 7 && daysRemaining > 0,
+            };
+        }
+        if (subscription.status === 'ACTIVE' && subscription.currentPeriodEnd) {
+            const now = new Date();
+            const expired = now > subscription.currentPeriodEnd;
+            if (expired) {
+                await this.prisma.subscription.update({
+                    where: { userId },
+                    data: { status: 'EXPIRED' },
+                });
+                return {
+                    expired: true,
+                    currentPeriodEnd: subscription.currentPeriodEnd,
+                    daysRemaining: 0,
+                    isExpiringSoon: false,
+                };
+            }
+            const daysRemaining = Math.ceil((subscription.currentPeriodEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+            return {
+                expired: false,
+                currentPeriodEnd: subscription.currentPeriodEnd,
+                daysRemaining: Math.max(0, daysRemaining),
+                isExpiringSoon: daysRemaining <= 7 && daysRemaining > 0,
             };
         }
         return { expired: false };

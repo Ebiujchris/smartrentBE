@@ -177,6 +177,28 @@ let PropertiesService = class PropertiesService {
         if (property.ownerId !== userId) {
             throw new common_1.ForbiddenException('Access denied');
         }
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+            include: {
+                subscription: true,
+            },
+        });
+        if (!user?.subscription) {
+            throw new common_1.ForbiddenException('No active subscription found');
+        }
+        if (user.subscription.status === 'EXPIRED') {
+            throw new common_1.ForbiddenException('Your subscription has expired. Please renew to add more units.');
+        }
+        const totalUnits = await this.prisma.unit.count({
+            where: {
+                property: {
+                    ownerId: userId,
+                },
+            },
+        });
+        if (totalUnits >= user.subscription.maxUnits) {
+            throw new common_1.ForbiddenException(`You have reached your plan limit of ${user.subscription.maxUnits} units. Please upgrade your subscription to add more units.`);
+        }
         return this.prisma.unit.create({
             data: {
                 unitNumber: data.unitNumber,

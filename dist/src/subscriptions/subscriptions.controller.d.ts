@@ -45,9 +45,19 @@ export declare class SubscriptionsController {
         expired: boolean;
         trialEndsAt?: undefined;
         daysRemaining?: undefined;
+        isExpiringSoon?: undefined;
+        currentPeriodEnd?: undefined;
     } | {
         expired: boolean;
         trialEndsAt: Date;
         daysRemaining: number;
+        isExpiringSoon: boolean;
+        currentPeriodEnd?: undefined;
+    } | {
+        expired: boolean;
+        currentPeriodEnd: Date;
+        daysRemaining: number;
+        isExpiringSoon: boolean;
+        trialEndsAt?: undefined;
     }>;
 }

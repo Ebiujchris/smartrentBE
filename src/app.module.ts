@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
@@ -11,13 +10,14 @@ import { LeasesModule } from './leases/leases.module';
 import { PaymentsModule } from './payments/payments.module';
 import { MaintenanceModule } from './maintenance/maintenance.module';
 import { NotificationsModule } from './notifications/notifications.module';
-import { ReportsModule } from './reports/reports.module';
+// import { ReportsModule } from './reports/reports.module'; // TODO: Fix reports module schema mismatch
 import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 import { UnitsModule } from './units/units.module';
 import { VacantListingsModule } from './vacant-listings/vacant-listings.module';
 import { SupportModule } from './support/support.module';
 import { ContractsModule } from './contracts/contracts.module';
 import { ContactPurchasesModule } from './contact-purchases/contact-purchases.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
@@ -33,7 +33,7 @@ import { ContactPurchasesModule } from './contact-purchases/contact-purchases.mo
     PaymentsModule,
     MaintenanceModule,
     NotificationsModule,
-    ReportsModule,
+    // ReportsModule, // TODO: Fix reports module
     SubscriptionsModule,
     UnitsModule,
     VacantListingsModule,

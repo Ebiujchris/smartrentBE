@@ -18,6 +18,18 @@ let VacantListingsService = class VacantListingsService {
         this.prisma = prisma;
     }
     async create(userId, createDto) {
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+            include: {
+                subscription: true,
+            },
+        });
+        if (!user?.subscription) {
+            throw new common_1.ForbiddenException('No active subscription found');
+        }
+        if (user.subscription.plan === 'STARTER') {
+            throw new common_1.ForbiddenException('Vacancy advertising is only available on Professional and Premium plans. Please upgrade your subscription.');
+        }
         const unit = await this.prisma.unit.findUnique({
             where: { id: createDto.unitId },
             include: {
@@ -115,6 +127,18 @@ let VacantListingsService = class VacantListingsService {
         return listings;
     }
     async findMyListings(userId) {
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+            include: {
+                subscription: true,
+            },
+        });
+        if (!user?.subscription) {
+            throw new common_1.ForbiddenException('No active subscription found');
+        }
+        if (user.subscription.plan === 'STARTER') {
+            throw new common_1.ForbiddenException('Vacancy advertising is only available on Professional and Premium plans.');
+        }
         const listings = await this.prisma.vacantListing.findMany({
             where: {
                 unit: {
