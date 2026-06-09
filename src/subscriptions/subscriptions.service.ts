@@ -120,10 +120,42 @@ export class SubscriptionsService {
         });
       }
 
+      const daysRemaining = Math.ceil((subscription.trialEndsAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+
       return {
         expired,
         trialEndsAt: subscription.trialEndsAt,
-        daysRemaining: Math.ceil((subscription.trialEndsAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)),
+        daysRemaining: Math.max(0, daysRemaining),
+        isExpiringSoon: daysRemaining <= 7 && daysRemaining > 0,
+      };
+    }
+
+    // Check if active subscription has expired (past currentPeriodEnd)
+    if (subscription.status === 'ACTIVE' && subscription.currentPeriodEnd) {
+      const now = new Date();
+      const expired = now > subscription.currentPeriodEnd;
+
+      if (expired) {
+        await this.prisma.subscription.update({
+          where: { userId },
+          data: { status: 'EXPIRED' },
+        });
+
+        return {
+          expired: true,
+          currentPeriodEnd: subscription.currentPeriodEnd,
+          daysRemaining: 0,
+          isExpiringSoon: false,
+        };
+      }
+
+      const daysRemaining = Math.ceil((subscription.currentPeriodEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+
+      return {
+        expired: false,
+        currentPeriodEnd: subscription.currentPeriodEnd,
+        daysRemaining: Math.max(0, daysRemaining),
+        isExpiringSoon: daysRemaining <= 7 && daysRemaining > 0,
       };
     }
 
