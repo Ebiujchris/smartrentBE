@@ -192,6 +192,39 @@ export class PropertiesService {
       throw new ForbiddenException('Access denied');
     }
 
+    // Check subscription limits
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        subscription: true,
+      },
+    });
+
+    if (!user?.subscription) {
+      throw new ForbiddenException('No active subscription found');
+    }
+
+    // Check if subscription has expired
+    if (user.subscription.status === 'EXPIRED') {
+      throw new ForbiddenException('Your subscription has expired. Please renew to add more units.');
+    }
+
+    // Count total units owned by this user across all properties
+    const totalUnits = await this.prisma.unit.count({
+      where: {
+        property: {
+          ownerId: userId,
+        },
+      },
+    });
+
+    // Check if user has reached their unit limit
+    if (totalUnits >= user.subscription.maxUnits) {
+      throw new ForbiddenException(
+        `You have reached your plan limit of ${user.subscription.maxUnits} units. Please upgrade your subscription to add more units.`
+      );
+    }
+
     return this.prisma.unit.create({
       data: {
         unitNumber: data.unitNumber,
