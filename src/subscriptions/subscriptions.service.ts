@@ -37,16 +37,16 @@ export class SubscriptionsService {
     }
 
     // Determine max units and amount based on plan
-    let maxUnits = 5;
+    let maxUnits = 7;
     let amount = 75000;
 
     switch (updateDto.plan) {
       case 'STARTER':
-        maxUnits = 5;
+        maxUnits = 7;
         amount = 75000;
         break;
       case 'PROFESSIONAL':
-        maxUnits = 20;
+        maxUnits = 30;
         amount = 150000;
         break;
       case 'PREMIUM':
