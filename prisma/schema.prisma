@@ -374,3 +374,37 @@ model Contract {
 
   @@map("contracts")
 }
+
+model FlutterwaveTransaction {
+  id              String   @id @default(cuid())
+
+  // Transaction references
+  txRef           String   @unique // Our internal reference
+  flwRef          String?  // Flutterwave reference
+
+  // Amount and currency
+  amount          Decimal  @db.Decimal(10, 2)
+  currency        String   @default("UGX")
+
+  // Customer details
+  phoneNumber     String
+  email           String
+  network         String   // MTN or AIRTEL
+
+  // Status tracking
+  status          String   // pending, successful, failed
+  errorMessage    String?
+
+  // Metadata
+  metadata        Json?    // Additional data (e.g., type: 'contact_purchase', 'subscription')
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  verifiedAt      DateTime?
+  webhookReceivedAt DateTime?
+
+  @@index([txRef])
+  @@index([flwRef])
+  @@index([phoneNumber])
+  @@map("flutterwave_transactions")
+}
