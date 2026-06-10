@@ -51,10 +51,43 @@ let PesapalService = PesapalService_1 = class PesapalService {
                 formattedPhone = '256' + formattedPhone;
             }
             this.logger.log(`Initiating Pesapal payment: ${dto.reference}`);
-            const redirectUrl = `https://www.pesapal.com/payment?amount=${dto.amount}&ref=${dto.reference}`;
+            const token = await this.getAuthToken();
+            const ipnId = await this.registerIPN(token);
+            const backendUrl = this.configService.get('BACKEND_URL');
+            const frontendUrl = this.configService.get('FRONTEND_URL');
+            const orderPayload = {
+                id: dto.reference,
+                currency: 'UGX',
+                amount: dto.amount,
+                description: dto.description || 'Payment',
+                callback_url: `${frontendUrl}/payment-callback`,
+                notification_id: ipnId,
+                billing_address: {
+                    email_address: dto.email,
+                    phone_number: formattedPhone,
+                    country_code: 'UG',
+                    first_name: dto.metadata?.buyerName?.split(' ')[0] || 'Customer',
+                    last_name: dto.metadata?.buyerName?.split(' ').slice(1).join(' ') || '',
+                },
+            };
+            const orderResponse = await fetch(`${this.baseUrl}/Transactions/SubmitOrderRequest`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify(orderPayload),
+            });
+            const orderResult = await orderResponse.json();
+            if (!orderResponse.ok || orderResult.error) {
+                throw new Error(orderResult.error?.message || 'Failed to create payment order');
+            }
+            const redirectUrl = orderResult.redirect_url;
+            const orderTrackingId = orderResult.order_tracking_id;
             await this.prisma.pesapalTransaction.create({
                 data: {
                     txRef: dto.reference,
+                    orderTrackingId,
                     amount: dto.amount,
                     phoneNumber: formattedPhone,
                     email: dto.email,
@@ -92,6 +125,43 @@ let PesapalService = PesapalService_1 = class PesapalService {
             };
         }
     }
+    async getAuthToken() {
+        const response = await fetch(`${this.baseUrl}/Auth/RequestToken`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                consumer_key: this.consumerKey,
+                consumer_secret: this.consumerSecret,
+            }),
+        });
+        const result = await response.json();
+        if (!response.ok || result.error) {
+            throw new Error(result.error?.message || 'Failed to authenticate with Pesapal');
+        }
+        return result.token;
+    }
+    async registerIPN(token) {
+        const backendUrl = this.configService.get('BACKEND_URL');
+        const ipnUrl = `${backendUrl}/payments/pesapal/ipn`;
+        const response = await fetch(`${this.baseUrl}/URLSetup/RegisterIPN`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+                url: ipnUrl,
+                ipn_notification_type: 'GET',
+            }),
+        });
+        const result = await response.json();
+        if (!response.ok && response.status !== 409) {
+            this.logger.warn(`IPN registration response: ${JSON.stringify(result)}`);
+        }
+        return result.ipn_id || result.data?.ipn_id || '';
+    }
     async verifyPayment(orderTrackingId) {
         try {
             this.logger.log(`Verifying payment: ${orderTrackingId}`);
@@ -101,11 +171,38 @@ let PesapalService = PesapalService_1 = class PesapalService {
             if (!transaction) {
                 throw new Error('Transaction not found');
             }
+            const token = await this.getAuthToken();
+            const response = await fetch(`${this.baseUrl}/Transactions/GetTransactionStatus?orderTrackingId=${transaction.orderTrackingId || orderTrackingId}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+            const result = await response.json();
+            if (!response.ok) {
+                throw new Error(result.error?.message || 'Failed to verify payment');
+            }
+            const pesapalStatus = result.payment_status_description?.toLowerCase() || '';
+            let status = 'pending';
+            if (pesapalStatus.includes('completed') || pesapalStatus.includes('success')) {
+                status = 'successful';
+            }
+            else if (pesapalStatus.includes('failed') || pesapalStatus.includes('invalid')) {
+                status = 'failed';
+            }
+            await this.prisma.pesapalTransaction.update({
+                where: { id: transaction.id },
+                data: {
+                    status,
+                    verifiedAt: new Date(),
+                    paymentMethod: result.payment_method,
+                },
+            });
             return {
-                success: transaction.status === 'successful',
+                success: status === 'successful',
                 txRef: transaction.txRef,
                 message: 'Payment status retrieved',
-                status: transaction.status,
+                status,
             };
         }
         catch (error) {
@@ -132,13 +229,15 @@ let PesapalService = PesapalService_1 = class PesapalService {
                 where: { orderTrackingId },
             });
             if (transaction) {
+                const verification = await this.verifyPayment(orderTrackingId);
                 await this.prisma.pesapalTransaction.update({
                     where: { id: transaction.id },
                     data: {
-                        status: 'successful',
+                        status: verification.status,
                         ipnReceivedAt: new Date(),
                     },
                 });
+                this.logger.log(`IPN processed: ${orderTrackingId} - Status: ${verification.status}`);
             }
         }
         catch (error) {

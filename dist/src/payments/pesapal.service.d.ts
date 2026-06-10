@@ -25,6 +25,8 @@ export declare class PesapalService {
     private baseUrl;
     constructor(configService: ConfigService, prisma: PrismaService);
     initiatePayment(dto: InitiatePaymentDto): Promise<PaymentResponse>;
+    private getAuthToken;
+    private registerIPN;
     verifyPayment(orderTrackingId: string): Promise<PaymentResponse>;
     getTransactionStatus(txRef: string): Promise<string>;
     handleIPN(orderTrackingId: string): Promise<void>;
