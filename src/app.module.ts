@@ -10,7 +10,7 @@ import { LeasesModule } from './leases/leases.module';
 import { PaymentsModule } from './payments/payments.module';
 import { MaintenanceModule } from './maintenance/maintenance.module';
 import { NotificationsModule } from './notifications/notifications.module';
-// import { ReportsModule } from './reports/reports.module'; // TODO: Fix reports module schema mismatch
+import { ReportsModule } from './reports/reports.module';
 import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 import { UnitsModule } from './units/units.module';
 import { VacantListingsModule } from './vacant-listings/vacant-listings.module';
@@ -33,7 +33,7 @@ import { ConfigModule } from '@nestjs/config';
     PaymentsModule,
     MaintenanceModule,
     NotificationsModule,
-    // ReportsModule, // TODO: Fix reports module
+    ReportsModule,
     SubscriptionsModule,
     UnitsModule,
     VacantListingsModule,

@@ -19,6 +19,7 @@ const leases_module_1 = require("./leases/leases.module");
 const payments_module_1 = require("./payments/payments.module");
 const maintenance_module_1 = require("./maintenance/maintenance.module");
 const notifications_module_1 = require("./notifications/notifications.module");
+const reports_module_1 = require("./reports/reports.module");
 const subscriptions_module_1 = require("./subscriptions/subscriptions.module");
 const units_module_1 = require("./units/units.module");
 const vacant_listings_module_1 = require("./vacant-listings/vacant-listings.module");
@@ -44,6 +45,7 @@ exports.AppModule = AppModule = __decorate([
             payments_module_1.PaymentsModule,
             maintenance_module_1.MaintenanceModule,
             notifications_module_1.NotificationsModule,
+            reports_module_1.ReportsModule,
             subscriptions_module_1.SubscriptionsModule,
             units_module_1.UnitsModule,
             vacant_listings_module_1.VacantListingsModule,
