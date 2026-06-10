@@ -117,7 +117,7 @@ let ReportsService = class ReportsService {
                 },
             },
         });
-        return properties.map((property) => {
+        const propertiesData = properties.map((property) => {
             const totalUnits = property.units.length;
             const occupiedUnits = property.units.filter((u) => u.leases.length > 0).length;
             const vacantUnits = totalUnits - occupiedUnits;
@@ -137,10 +137,24 @@ let ReportsService = class ReportsService {
                 totalUnits,
                 occupiedUnits,
                 vacantUnits,
-                occupancyRate: totalUnits > 0 ? (occupiedUnits / totalUnits) * 100 : 0,
-                totalRevenue,
+                occupancyRate: totalUnits > 0 ? Number(((occupiedUnits / totalUnits) * 100).toFixed(1)) : 0,
+                totalRent: Number(property.units.reduce((sum, u) => sum + Number(u.rentAmount), 0).toFixed(2)),
+                collectedRent: Number(totalRevenue.toFixed(2)),
             };
         });
+        const totalUnits = propertiesData.reduce((sum, p) => sum + p.totalUnits, 0);
+        const totalOccupied = propertiesData.reduce((sum, p) => sum + p.occupiedUnits, 0);
+        const totalVacant = propertiesData.reduce((sum, p) => sum + p.vacantUnits, 0);
+        return {
+            properties: propertiesData,
+            summary: {
+                totalProperties: properties.length,
+                totalUnits,
+                totalOccupied,
+                totalVacant,
+                overallOccupancy: totalUnits > 0 ? Number(((totalOccupied / totalUnits) * 100).toFixed(1)) : 0,
+            },
+        };
     }
     async getTenant(userId) {
         const tenants = await this.prisma.tenant.findMany({

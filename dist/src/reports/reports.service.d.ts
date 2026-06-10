@@ -29,15 +29,25 @@ export declare class ReportsService {
         }[];
     }>;
     getProperty(userId: string): Promise<{
-        id: string;
-        name: string;
-        address: string;
-        totalUnits: number;
-        occupiedUnits: number;
-        vacantUnits: number;
-        occupancyRate: number;
-        totalRevenue: number;
-    }[]>;
+        properties: {
+            id: string;
+            name: string;
+            address: string;
+            totalUnits: number;
+            occupiedUnits: number;
+            vacantUnits: number;
+            occupancyRate: number;
+            totalRent: number;
+            collectedRent: number;
+        }[];
+        summary: {
+            totalProperties: number;
+            totalUnits: number;
+            totalOccupied: number;
+            totalVacant: number;
+            overallOccupancy: number;
+        };
+    }>;
     getTenant(userId: string): Promise<{
         id: string;
         name: string;

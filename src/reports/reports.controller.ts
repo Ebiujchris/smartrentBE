@@ -9,6 +9,8 @@ export class ReportsController {
   constructor(private readonly reportsService: ReportsService) {}
 
   @Get('overview')
+
+  @Get('overview')
   async getOverview(@CurrentUser() user: any) {
     return this.reportsService.getOverview(user.id);
   }
