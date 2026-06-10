@@ -1,9 +1,9 @@
 import { ContactPurchasesService } from './contact-purchases.service';
-import { FlutterwaveService } from '../payments/flutterwave.service';
+import { PesapalService } from '../payments/pesapal.service';
 export declare class ContactPurchasesController {
     private readonly service;
-    private readonly flutterwaveService;
-    constructor(service: ContactPurchasesService, flutterwaveService: FlutterwaveService);
+    private readonly pesapalService;
+    constructor(service: ContactPurchasesService, pesapalService: PesapalService);
     checkPurchase(dto: {
         listingId: string;
         buyerPhone: string;
@@ -15,24 +15,22 @@ export declare class ContactPurchasesController {
         buyerPhone: string;
         buyerEmail?: string;
         buyerName?: string;
-        paymentMethod: 'MTN' | 'AIRTEL';
     }): Promise<{
         success: boolean;
         message: string;
     } | {
         txRef: string;
         success: boolean;
-        flwRef?: string;
+        redirectUrl?: string;
         message: string;
         status: "pending" | "successful" | "failed";
     }>;
     verifyAndPurchase(dto: {
-        txRef: string;
+        orderTrackingId: string;
         listingId: string;
         buyerPhone: string;
         buyerEmail?: string;
         buyerName?: string;
-        paymentMethod: string;
     }): Promise<{
         success: boolean;
         message: string;
@@ -49,12 +47,12 @@ export declare class ContactPurchasesController {
         } | null;
         purchase: {
             id: string;
+            paymentMethod: string;
             listingId: string;
             buyerPhone: string;
             buyerEmail: string | null;
             buyerName: string | null;
             amountPaid: import("@prisma/client-runtime-utils").Decimal;
-            paymentMethod: string;
             transactionId: string | null;
             purchasedAt: Date;
             expiresAt: Date | null;
@@ -71,12 +69,12 @@ export declare class ContactPurchasesController {
         transactionId: string;
     }): Promise<{
         id: string;
+        paymentMethod: string;
         listingId: string;
         buyerPhone: string;
         buyerEmail: string | null;
         buyerName: string | null;
         amountPaid: import("@prisma/client-runtime-utils").Decimal;
-        paymentMethod: string;
         transactionId: string | null;
         purchasedAt: Date;
         expiresAt: Date | null;
@@ -130,12 +128,12 @@ export declare class ContactPurchasesController {
         };
     } & {
         id: string;
+        paymentMethod: string;
         listingId: string;
         buyerPhone: string;
         buyerEmail: string | null;
         buyerName: string | null;
         amountPaid: import("@prisma/client-runtime-utils").Decimal;
-        paymentMethod: string;
         transactionId: string | null;
         purchasedAt: Date;
         expiresAt: Date | null;

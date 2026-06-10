@@ -1,12 +1,12 @@
 import { Controller, Post, Get, Body, Query, HttpCode } from '@nestjs/common';
 import { ContactPurchasesService } from './contact-purchases.service';
-import { FlutterwaveService } from '../payments/flutterwave.service';
+import { PesapalService } from '../payments/pesapal.service';
 
 @Controller('contact-purchases')
 export class ContactPurchasesController {
   constructor(
     private readonly service: ContactPurchasesService,
-    private readonly flutterwaveService: FlutterwaveService,
+    private readonly pesapalService: PesapalService,
   ) {}
 
   @Post('check')
@@ -25,7 +25,6 @@ export class ContactPurchasesController {
     buyerPhone: string;
     buyerEmail?: string;
     buyerName?: string;
-    paymentMethod: 'MTN' | 'AIRTEL';
   }) {
     // Check if already purchased
     const alreadyPurchased = await this.service.hasPurchased(dto.listingId, dto.buyerPhone);
@@ -39,13 +38,13 @@ export class ContactPurchasesController {
     // Generate unique transaction reference
     const txRef = `CONTACT_${dto.listingId}_${Date.now()}`;
 
-    // Initiate Flutterwave payment
-    const paymentResponse = await this.flutterwaveService.initiateMobileMoneyPayment({
+    // Initiate Pesapal payment
+    const paymentResponse = await this.pesapalService.initiatePayment({
       amount: 10000,
       phoneNumber: dto.buyerPhone,
       email: dto.buyerEmail || 'customer@smartrentug.com',
-      network: dto.paymentMethod,
       reference: txRef,
+      description: 'Contact Purchase - SmartRentUG',
       metadata: {
         type: 'contact_purchase',
         listingId: dto.listingId,
@@ -62,15 +61,14 @@ export class ContactPurchasesController {
   @Post('verify-and-purchase')
   @HttpCode(200)
   async verifyAndPurchase(@Body() dto: {
-    txRef: string;
+    orderTrackingId: string;
     listingId: string;
     buyerPhone: string;
     buyerEmail?: string;
     buyerName?: string;
-    paymentMethod: string;
   }) {
-    // Verify payment with Flutterwave
-    const verification = await this.flutterwaveService.verifyPayment(dto.txRef);
+    // Verify payment with Pesapal
+    const verification = await this.pesapalService.verifyPayment(dto.orderTrackingId);
 
     if (!verification.success || verification.status !== 'successful') {
       return {
@@ -86,8 +84,8 @@ export class ContactPurchasesController {
       buyerPhone: dto.buyerPhone,
       buyerEmail: dto.buyerEmail,
       buyerName: dto.buyerName,
-      paymentMethod: dto.paymentMethod,
-      transactionId: dto.txRef,
+      paymentMethod: 'PESAPAL',
+      transactionId: dto.orderTrackingId,
     });
 
     // Get contact info

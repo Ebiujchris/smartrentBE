@@ -15,13 +15,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ContactPurchasesController = void 0;
 const common_1 = require("@nestjs/common");
 const contact_purchases_service_1 = require("./contact-purchases.service");
-const flutterwave_service_1 = require("../payments/flutterwave.service");
+const pesapal_service_1 = require("../payments/pesapal.service");
 let ContactPurchasesController = class ContactPurchasesController {
     service;
-    flutterwaveService;
-    constructor(service, flutterwaveService) {
+    pesapalService;
+    constructor(service, pesapalService) {
         this.service = service;
-        this.flutterwaveService = flutterwaveService;
+        this.pesapalService = pesapalService;
     }
     async checkPurchase(dto) {
         const hasPurchased = await this.service.hasPurchased(dto.listingId, dto.buyerPhone);
@@ -36,12 +36,12 @@ let ContactPurchasesController = class ContactPurchasesController {
             };
         }
         const txRef = `CONTACT_${dto.listingId}_${Date.now()}`;
-        const paymentResponse = await this.flutterwaveService.initiateMobileMoneyPayment({
+        const paymentResponse = await this.pesapalService.initiatePayment({
             amount: 10000,
             phoneNumber: dto.buyerPhone,
             email: dto.buyerEmail || 'customer@smartrentug.com',
-            network: dto.paymentMethod,
             reference: txRef,
+            description: 'Contact Purchase - SmartRentUG',
             metadata: {
                 type: 'contact_purchase',
                 listingId: dto.listingId,
@@ -54,7 +54,7 @@ let ContactPurchasesController = class ContactPurchasesController {
         };
     }
     async verifyAndPurchase(dto) {
-        const verification = await this.flutterwaveService.verifyPayment(dto.txRef);
+        const verification = await this.pesapalService.verifyPayment(dto.orderTrackingId);
         if (!verification.success || verification.status !== 'successful') {
             return {
                 success: false,
@@ -67,8 +67,8 @@ let ContactPurchasesController = class ContactPurchasesController {
             buyerPhone: dto.buyerPhone,
             buyerEmail: dto.buyerEmail,
             buyerName: dto.buyerName,
-            paymentMethod: dto.paymentMethod,
-            transactionId: dto.txRef,
+            paymentMethod: 'PESAPAL',
+            transactionId: dto.orderTrackingId,
         });
         const contact = await this.service.getContactInfo(dto.listingId, dto.buyerPhone);
         return {
@@ -137,6 +137,6 @@ __decorate([
 exports.ContactPurchasesController = ContactPurchasesController = __decorate([
     (0, common_1.Controller)('contact-purchases'),
     __metadata("design:paramtypes", [contact_purchases_service_1.ContactPurchasesService,
-        flutterwave_service_1.FlutterwaveService])
+        pesapal_service_1.PesapalService])
 ], ContactPurchasesController);
 //# sourceMappingURL=contact-purchases.controller.js.map

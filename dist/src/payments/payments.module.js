@@ -12,6 +12,8 @@ const payments_service_1 = require("./payments.service");
 const payments_controller_1 = require("./payments.controller");
 const flutterwave_service_1 = require("./flutterwave.service");
 const payments_flutterwave_controller_1 = require("./payments-flutterwave.controller");
+const pesapal_service_1 = require("./pesapal.service");
+const payments_pesapal_controller_1 = require("./payments-pesapal.controller");
 const prisma_module_1 = require("../prisma/prisma.module");
 let PaymentsModule = class PaymentsModule {
 };
@@ -19,9 +21,9 @@ exports.PaymentsModule = PaymentsModule;
 exports.PaymentsModule = PaymentsModule = __decorate([
     (0, common_1.Module)({
         imports: [prisma_module_1.PrismaModule],
-        controllers: [payments_controller_1.PaymentsController, payments_flutterwave_controller_1.PaymentsFlutterwaveController],
-        providers: [payments_service_1.PaymentsService, flutterwave_service_1.FlutterwaveService],
-        exports: [payments_service_1.PaymentsService, flutterwave_service_1.FlutterwaveService],
+        controllers: [payments_controller_1.PaymentsController, payments_flutterwave_controller_1.PaymentsFlutterwaveController, payments_pesapal_controller_1.PaymentsPesapalController],
+        providers: [payments_service_1.PaymentsService, flutterwave_service_1.FlutterwaveService, pesapal_service_1.PesapalService],
+        exports: [payments_service_1.PaymentsService, flutterwave_service_1.FlutterwaveService, pesapal_service_1.PesapalService],
     })
 ], PaymentsModule);
 //# sourceMappingURL=payments.module.js.map

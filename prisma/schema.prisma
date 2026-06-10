@@ -408,3 +408,40 @@ model FlutterwaveTransaction {
   @@index([phoneNumber])
   @@map("flutterwave_transactions")
 }
+
+model PesapalTransaction {
+  id              String   @id @default(cuid())
+
+  // Transaction references
+  txRef           String   @unique // Our internal reference
+  orderTrackingId String?  @unique // Pesapal order tracking ID
+
+  // Amount and currency
+  amount          Decimal  @db.Decimal(10, 2)
+  currency        String   @default("UGX")
+
+  // Customer details
+  phoneNumber     String
+  email           String
+
+  // Status tracking
+  status          String   // pending, successful, failed
+  paymentMethod   String?  // Mobile Money, Card, etc.
+  errorMessage    String?
+
+  // Redirect URL for payment
+  redirectUrl     String?
+
+  // Metadata
+  metadata        Json?    // Additional data (e.g., type: 'contact_purchase', 'subscription')
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  verifiedAt      DateTime?
+  ipnReceivedAt   DateTime?
+
+  @@index([txRef])
+  @@index([orderTrackingId])
+  @@index([phoneNumber])
+  @@map("pesapal_transactions")
+}

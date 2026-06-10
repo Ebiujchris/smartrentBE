@@ -12,12 +12,12 @@ export declare class ContactPurchasesService {
         transactionId: string;
     }): Promise<{
         id: string;
+        paymentMethod: string;
         listingId: string;
         buyerPhone: string;
         buyerEmail: string | null;
         buyerName: string | null;
         amountPaid: import("@prisma/client-runtime-utils").Decimal;
-        paymentMethod: string;
         transactionId: string | null;
         purchasedAt: Date;
         expiresAt: Date | null;
@@ -71,12 +71,12 @@ export declare class ContactPurchasesService {
         };
     } & {
         id: string;
+        paymentMethod: string;
         listingId: string;
         buyerPhone: string;
         buyerEmail: string | null;
         buyerName: string | null;
         amountPaid: import("@prisma/client-runtime-utils").Decimal;
-        paymentMethod: string;
         transactionId: string | null;
         purchasedAt: Date;
         expiresAt: Date | null;
