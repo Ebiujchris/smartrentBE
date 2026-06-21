@@ -152,10 +152,14 @@ export class PesapalService {
   }
 
   private async getAuthToken(): Promise<string> {
-    const response = await fetch(`${this.baseUrl}/Auth/RequestToken`, {
+    const authUrl = `${this.baseUrl}/Auth/RequestToken`;
+    this.logger.log(`Pesapal auth attempt: URL=${authUrl}, env=${this.environment}, hasKey=${!!this.consumerKey}, hasSecret=${!!this.consumerSecret}`);
+    
+    const response = await fetch(authUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
       },
       body: JSON.stringify({
         consumer_key: this.consumerKey,
@@ -166,9 +170,11 @@ export class PesapalService {
     const result = await response.json();
 
     if (!response.ok || result.error) {
+      this.logger.error(`Pesapal auth FAILED: status=${response.status}, url=${authUrl}, error=${JSON.stringify(result.error)}, env=${this.environment}`);
       throw new Error(result.error?.message || 'Failed to authenticate with Pesapal');
     }
 
+    this.logger.log('Pesapal auth SUCCESS - token acquired');
     return result.token;
   }
 
