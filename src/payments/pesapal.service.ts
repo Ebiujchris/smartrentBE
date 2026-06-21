@@ -31,17 +31,18 @@ export class PesapalService {
     private configService: ConfigService,
     private prisma: PrismaService,
   ) {
-    this.consumerKey = this.configService.get<string>('PESAPAL_CONSUMER_KEY');
-    this.consumerSecret = this.configService.get<string>('PESAPAL_CONSUMER_SECRET');
-    this.environment = this.configService.get<string>('PESAPAL_ENVIRONMENT') || 'sandbox';
-    this.baseUrl = this.environment.toLowerCase() === 'live' 
+    // Read from ConfigService first, fallback to process.env directly
+    this.consumerKey = this.configService.get<string>('PESAPAL_CONSUMER_KEY') || process.env.PESAPAL_CONSUMER_KEY;
+    this.consumerSecret = this.configService.get<string>('PESAPAL_CONSUMER_SECRET') || process.env.PESAPAL_CONSUMER_SECRET;
+    this.environment = this.configService.get<string>('PESAPAL_ENVIRONMENT') || process.env.PESAPAL_ENVIRONMENT || 'sandbox';
+    this.baseUrl = this.environment.toLowerCase().trim() === 'live' 
       ? 'https://pay.pesapal.com/v3/api' 
       : 'https://cybqa.pesapal.com/pesapalv3/api';
 
     if (!this.consumerKey || !this.consumerSecret) {
       this.logger.warn('Pesapal keys not configured. Payment features will be disabled.');
     } else {
-      this.logger.log(`Pesapal service initialized in ${this.environment} mode`);
+      this.logger.warn(`Pesapal initialized: env=${this.environment}, baseUrl=${this.baseUrl}, keyLen=${this.consumerKey?.length}`);
     }
   }
 
@@ -153,7 +154,7 @@ export class PesapalService {
 
   private async getAuthToken(): Promise<string> {
     const authUrl = `${this.baseUrl}/Auth/RequestToken`;
-    this.logger.log(`Pesapal auth attempt: URL=${authUrl}, env=${this.environment}, hasKey=${!!this.consumerKey}, hasSecret=${!!this.consumerSecret}`);
+    this.logger.warn(`Pesapal auth attempt: URL=${authUrl}, env=${this.environment}, hasKey=${!!this.consumerKey}, hasSecret=${!!this.consumerSecret}`);
     
     const response = await fetch(authUrl, {
       method: 'POST',
@@ -170,11 +171,12 @@ export class PesapalService {
     const result = await response.json();
 
     if (!response.ok || result.error) {
-      this.logger.error(`Pesapal auth FAILED: status=${response.status}, url=${authUrl}, error=${JSON.stringify(result.error)}, env=${this.environment}`);
-      throw new Error(result.error?.message || 'Failed to authenticate with Pesapal');
+      const diagMsg = `Pesapal auth FAILED: status=${response.status}, url=${authUrl}, errorCode=${result.error?.code}, env=${this.environment}, keyLen=${this.consumerKey?.length || 0}`;
+      this.logger.error(diagMsg);
+      throw new Error(diagMsg);
     }
 
-    this.logger.log('Pesapal auth SUCCESS - token acquired');
+    this.logger.warn('Pesapal auth SUCCESS - token acquired');
     return result.token;
   }
 
