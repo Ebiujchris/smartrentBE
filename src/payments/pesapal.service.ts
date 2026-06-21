@@ -83,7 +83,7 @@ export class PesapalService {
           phone_number: formattedPhone,
           country_code: 'UG',
           first_name: dto.metadata?.buyerName?.split(' ')[0] || 'Customer',
-          last_name: dto.metadata?.buyerName?.split(' ').slice(1).join(' ') || '',
+          last_name: dto.metadata?.buyerName?.split(' ').slice(1).join(' ') || 'User',
         },
       };
 

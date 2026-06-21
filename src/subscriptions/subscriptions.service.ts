@@ -100,6 +100,32 @@ export class SubscriptionsService {
     return updated;
   }
 
+  async activateSubscriptionAfterPayment(userId: string) {
+    const subscription = await this.prisma.subscription.findUnique({
+      where: { userId },
+    });
+
+    if (!subscription) {
+      throw new NotFoundException('Subscription not found');
+    }
+
+    const now = new Date();
+    // Assuming a monthly billing cycle
+    const nextMonth = new Date();
+    nextMonth.setMonth(nextMonth.getMonth() + 1);
+
+    const updated = await this.prisma.subscription.update({
+      where: { userId },
+      data: {
+        status: 'ACTIVE',
+        currentPeriodStart: now,
+        currentPeriodEnd: nextMonth,
+      },
+    });
+
+    return updated;
+  }
+
   async checkTrialExpiry(userId: string) {
     const subscription = await this.prisma.subscription.findUnique({
       where: { userId },
