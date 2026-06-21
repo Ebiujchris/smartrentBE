@@ -34,7 +34,7 @@ export class PesapalService {
     this.consumerKey = this.configService.get<string>('PESAPAL_CONSUMER_KEY');
     this.consumerSecret = this.configService.get<string>('PESAPAL_CONSUMER_SECRET');
     this.environment = this.configService.get<string>('PESAPAL_ENVIRONMENT') || 'sandbox';
-    this.baseUrl = this.environment === 'live' 
+    this.baseUrl = this.environment.toLowerCase() === 'live' 
       ? 'https://pay.pesapal.com/v3/api' 
       : 'https://cybqa.pesapal.com/pesapalv3/api';
 
