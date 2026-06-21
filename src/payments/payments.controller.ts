@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { PaymentsService } from './payments.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
@@ -23,7 +24,18 @@ export class PaymentsController {
   constructor(
     private readonly paymentsService: PaymentsService,
     private readonly prisma: PrismaService,
+    private readonly configService: ConfigService,
   ) {}
+
+  @Get('debug-env')
+  getDebugEnv() {
+    return {
+      env: this.configService.get<string>('PESAPAL_ENVIRONMENT'),
+      hasKey: !!this.configService.get<string>('PESAPAL_CONSUMER_KEY'),
+      hasSecret: !!this.configService.get<string>('PESAPAL_CONSUMER_SECRET'),
+      nodeEnv: process.env.NODE_ENV,
+    };
+  }
 
   @Post()
   @Roles('LANDLORD', 'PROPERTY_MANAGER', 'ADMIN')
