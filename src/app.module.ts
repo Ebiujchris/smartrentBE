@@ -17,6 +17,7 @@ import { VacantListingsModule } from './vacant-listings/vacant-listings.module';
 import { SupportModule } from './support/support.module';
 import { ContractsModule } from './contracts/contracts.module';
 import { ContactPurchasesModule } from './contact-purchases/contact-purchases.module';
+import { AdminModule } from './admin/admin.module';
 import { ConfigModule } from '@nestjs/config';
 
 @Module({
@@ -40,6 +41,7 @@ import { ConfigModule } from '@nestjs/config';
     SupportModule,
     ContractsModule,
     ContactPurchasesModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],

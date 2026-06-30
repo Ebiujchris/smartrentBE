@@ -18,7 +18,26 @@ let SupportService = class SupportService {
         this.prisma = prisma;
     }
     async getUserMessages(userId) {
-        return [];
+        return this.prisma.supportMessage.findMany({
+            where: {
+                OR: [
+                    { senderId: userId },
+                    { parent: { senderId: userId } }
+                ]
+            },
+            include: {
+                sender: {
+                    select: { fullName: true, role: true }
+                },
+                replies: {
+                    include: {
+                        sender: { select: { fullName: true, role: true } }
+                    },
+                    orderBy: { createdAt: 'asc' }
+                }
+            },
+            orderBy: { createdAt: 'desc' },
+        });
     }
     async sendMessage(userId, content) {
         const user = await this.prisma.user.findUnique({
@@ -28,6 +47,16 @@ let SupportService = class SupportService {
         if (!user) {
             throw new common_1.NotFoundException('User not found');
         }
+        const message = await this.prisma.supportMessage.create({
+            data: {
+                content,
+                senderId: userId,
+                subject: `Support request from ${user.fullName}`,
+            },
+            include: {
+                sender: { select: { fullName: true, role: true } }
+            }
+        });
         const adminUsers = await this.prisma.user.findMany({
             where: { role: 'ADMIN' },
             select: { id: true },
@@ -36,21 +65,13 @@ let SupportService = class SupportService {
             await this.prisma.notification.create({
                 data: {
                     userId: admin.id,
-                    title: `Support Message from ${user.fullName}`,
-                    message: content,
+                    title: `New Support Ticket`,
+                    message: `${user.fullName} sent a new support message.`,
                     type: 'INFO',
                 },
             });
         }
-        return {
-            id: Date.now().toString(),
-            content,
-            senderId: userId,
-            senderName: user.fullName,
-            senderRole: user.role,
-            createdAt: new Date().toISOString(),
-            isOwn: true,
-        };
+        return message;
     }
 };
 exports.SupportService = SupportService;

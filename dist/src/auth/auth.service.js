@@ -128,6 +128,9 @@ let AuthService = class AuthService {
         if (!isPasswordValid) {
             throw new common_1.UnauthorizedException('Invalid credentials');
         }
+        if (user.isSuspended) {
+            throw new common_1.UnauthorizedException('Your account has been suspended. Please contact support.');
+        }
         const token = this.generateToken(user.id);
         return {
             user: {

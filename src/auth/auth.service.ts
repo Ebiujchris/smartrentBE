@@ -102,6 +102,10 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    if (user.isSuspended) {
+      throw new UnauthorizedException('Your account has been suspended. Please contact support.');
+    }
+
     const token = this.generateToken(user.id);
 
     return {

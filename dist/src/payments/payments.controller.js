@@ -14,6 +14,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PaymentsController = void 0;
 const common_1 = require("@nestjs/common");
+const config_1 = require("@nestjs/config");
 const payments_service_1 = require("./payments.service");
 const create_payment_dto_1 = require("./dto/create-payment.dto");
 const update_payment_dto_1 = require("./dto/update-payment.dto");
@@ -25,9 +26,19 @@ const prisma_service_1 = require("../prisma/prisma.service");
 let PaymentsController = class PaymentsController {
     paymentsService;
     prisma;
-    constructor(paymentsService, prisma) {
+    configService;
+    constructor(paymentsService, prisma, configService) {
         this.paymentsService = paymentsService;
         this.prisma = prisma;
+        this.configService = configService;
+    }
+    getDebugEnv() {
+        return {
+            env: this.configService.get('PESAPAL_ENVIRONMENT'),
+            hasKey: !!this.configService.get('PESAPAL_CONSUMER_KEY'),
+            hasSecret: !!this.configService.get('PESAPAL_CONSUMER_SECRET'),
+            nodeEnv: process.env.NODE_ENV,
+        };
     }
     create(user, createPaymentDto) {
         return this.paymentsService.create(user.id, createPaymentDto);
@@ -75,6 +86,12 @@ let PaymentsController = class PaymentsController {
     }
 };
 exports.PaymentsController = PaymentsController;
+__decorate([
+    (0, common_1.Get)('debug-env'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], PaymentsController.prototype, "getDebugEnv", null);
 __decorate([
     (0, common_1.Post)(),
     (0, roles_decorator_1.Roles)('LANDLORD', 'PROPERTY_MANAGER', 'ADMIN'),
@@ -153,6 +170,7 @@ exports.PaymentsController = PaymentsController = __decorate([
     (0, common_1.Controller)('payments'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
     __metadata("design:paramtypes", [payments_service_1.PaymentsService,
-        prisma_service_1.PrismaService])
+        prisma_service_1.PrismaService,
+        config_1.ConfigService])
 ], PaymentsController);
 //# sourceMappingURL=payments.controller.js.map

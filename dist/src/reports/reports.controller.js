@@ -44,6 +44,7 @@ let ReportsController = class ReportsController {
 exports.ReportsController = ReportsController;
 __decorate([
     (0, common_1.Get)('overview'),
+    (0, common_1.Get)('overview'),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),

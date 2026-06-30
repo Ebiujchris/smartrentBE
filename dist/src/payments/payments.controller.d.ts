@@ -1,3 +1,4 @@
+import { ConfigService } from '@nestjs/config';
 import { PaymentsService } from './payments.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
@@ -5,7 +6,14 @@ import { PrismaService } from '../prisma/prisma.service';
 export declare class PaymentsController {
     private readonly paymentsService;
     private readonly prisma;
-    constructor(paymentsService: PaymentsService, prisma: PrismaService);
+    private readonly configService;
+    constructor(paymentsService: PaymentsService, prisma: PrismaService, configService: ConfigService);
+    getDebugEnv(): {
+        env: string | undefined;
+        hasKey: boolean;
+        hasSecret: boolean;
+        nodeEnv: string | undefined;
+    };
     create(user: any, createPaymentDto: CreatePaymentDto): Promise<{
         tenant: {
             user: {
@@ -15,6 +23,7 @@ export declare class PaymentsController {
                 phone: string | null;
                 role: import("@prisma/client").$Enums.UserRole;
                 id: string;
+                isSuspended: boolean;
                 createdAt: Date;
                 updatedAt: Date;
             };
@@ -72,10 +81,10 @@ export declare class PaymentsController {
         tenantId: string;
         dueDate: Date;
         leaseId: string;
-        paidDate: Date | null;
         method: import("@prisma/client").$Enums.PaymentMethod | null;
         reference: string | null;
         notes: string | null;
+        paidDate: Date | null;
     }>;
     findAll(user: any): Promise<any>;
     getOverdue(user: any): Promise<({
@@ -87,6 +96,7 @@ export declare class PaymentsController {
                 phone: string | null;
                 role: import("@prisma/client").$Enums.UserRole;
                 id: string;
+                isSuspended: boolean;
                 createdAt: Date;
                 updatedAt: Date;
             };
@@ -144,10 +154,10 @@ export declare class PaymentsController {
         tenantId: string;
         dueDate: Date;
         leaseId: string;
-        paidDate: Date | null;
         method: import("@prisma/client").$Enums.PaymentMethod | null;
         reference: string | null;
         notes: string | null;
+        paidDate: Date | null;
     })[]>;
     findByTenant(tenantId: string): Promise<({
         tenant: {
@@ -158,6 +168,7 @@ export declare class PaymentsController {
                 phone: string | null;
                 role: import("@prisma/client").$Enums.UserRole;
                 id: string;
+                isSuspended: boolean;
                 createdAt: Date;
                 updatedAt: Date;
             };
@@ -215,10 +226,10 @@ export declare class PaymentsController {
         tenantId: string;
         dueDate: Date;
         leaseId: string;
-        paidDate: Date | null;
         method: import("@prisma/client").$Enums.PaymentMethod | null;
         reference: string | null;
         notes: string | null;
+        paidDate: Date | null;
     })[]>;
     findOne(id: string): Promise<{
         tenant: {
@@ -229,6 +240,7 @@ export declare class PaymentsController {
                 phone: string | null;
                 role: import("@prisma/client").$Enums.UserRole;
                 id: string;
+                isSuspended: boolean;
                 createdAt: Date;
                 updatedAt: Date;
             };
@@ -286,10 +298,10 @@ export declare class PaymentsController {
         tenantId: string;
         dueDate: Date;
         leaseId: string;
-        paidDate: Date | null;
         method: import("@prisma/client").$Enums.PaymentMethod | null;
         reference: string | null;
         notes: string | null;
+        paidDate: Date | null;
     }>;
     update(id: string, updatePaymentDto: UpdatePaymentDto): Promise<{
         tenant: {
@@ -300,6 +312,7 @@ export declare class PaymentsController {
                 phone: string | null;
                 role: import("@prisma/client").$Enums.UserRole;
                 id: string;
+                isSuspended: boolean;
                 createdAt: Date;
                 updatedAt: Date;
             };
@@ -357,10 +370,10 @@ export declare class PaymentsController {
         tenantId: string;
         dueDate: Date;
         leaseId: string;
-        paidDate: Date | null;
         method: import("@prisma/client").$Enums.PaymentMethod | null;
         reference: string | null;
         notes: string | null;
+        paidDate: Date | null;
     }>;
     fixPaymentDates(): Promise<{
         message: string;
@@ -415,6 +428,7 @@ export declare class PaymentsController {
                 phone: string | null;
                 role: import("@prisma/client").$Enums.UserRole;
                 id: string;
+                isSuspended: boolean;
                 createdAt: Date;
                 updatedAt: Date;
             };
@@ -434,10 +448,10 @@ export declare class PaymentsController {
         tenantId: string;
         dueDate: Date;
         leaseId: string;
-        paidDate: Date | null;
         method: import("@prisma/client").$Enums.PaymentMethod | null;
         reference: string | null;
         notes: string | null;
+        paidDate: Date | null;
     }>;
     remove(id: string): Promise<{
         message: string;

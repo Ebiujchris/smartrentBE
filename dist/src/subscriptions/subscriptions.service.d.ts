@@ -54,6 +54,19 @@ export declare class SubscriptionsService {
         amount: import("@prisma/client-runtime-utils").Decimal;
         userId: string;
     }>;
+    activateSubscriptionAfterPayment(userId: string): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        plan: import("@prisma/client").$Enums.SubscriptionPlan;
+        status: import("@prisma/client").$Enums.SubscriptionStatus;
+        maxUnits: number;
+        trialEndsAt: Date | null;
+        currentPeriodStart: Date;
+        currentPeriodEnd: Date;
+        amount: import("@prisma/client-runtime-utils").Decimal;
+        userId: string;
+    }>;
     checkTrialExpiry(userId: string): Promise<{
         expired: boolean;
         trialEndsAt?: undefined;

@@ -26,6 +26,7 @@ const vacant_listings_module_1 = require("./vacant-listings/vacant-listings.modu
 const support_module_1 = require("./support/support.module");
 const contracts_module_1 = require("./contracts/contracts.module");
 const contact_purchases_module_1 = require("./contact-purchases/contact-purchases.module");
+const admin_module_1 = require("./admin/admin.module");
 const config_1 = require("@nestjs/config");
 let AppModule = class AppModule {
 };
@@ -52,6 +53,7 @@ exports.AppModule = AppModule = __decorate([
             support_module_1.SupportModule,
             contracts_module_1.ContractsModule,
             contact_purchases_module_1.ContactPurchasesModule,
+            admin_module_1.AdminModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],

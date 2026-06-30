@@ -23,10 +23,10 @@ let SupportController = class SupportController {
         this.supportService = supportService;
     }
     async getUserMessages(user) {
-        return this.supportService.getUserMessages(user.userId);
+        return this.supportService.getUserMessages(user.id);
     }
     async sendMessage(user, content) {
-        return this.supportService.sendMessage(user.userId, content);
+        return this.supportService.sendMessage(user.id, content);
     }
 };
 exports.SupportController = SupportController;

@@ -36,6 +36,7 @@ export declare class MaintenanceController {
                 phone: string | null;
                 role: import("@prisma/client").$Enums.UserRole;
                 id: string;
+                isSuspended: boolean;
                 createdAt: Date;
                 updatedAt: Date;
             };
@@ -94,6 +95,7 @@ export declare class MaintenanceController {
                 phone: string | null;
                 role: import("@prisma/client").$Enums.UserRole;
                 id: string;
+                isSuspended: boolean;
                 createdAt: Date;
                 updatedAt: Date;
             };
@@ -152,6 +154,7 @@ export declare class MaintenanceController {
                 phone: string | null;
                 role: import("@prisma/client").$Enums.UserRole;
                 id: string;
+                isSuspended: boolean;
                 createdAt: Date;
                 updatedAt: Date;
             };
@@ -210,6 +213,7 @@ export declare class MaintenanceController {
                 phone: string | null;
                 role: import("@prisma/client").$Enums.UserRole;
                 id: string;
+                isSuspended: boolean;
                 createdAt: Date;
                 updatedAt: Date;
             };
@@ -271,6 +275,7 @@ export declare class MaintenanceController {
                 phone: string | null;
                 role: import("@prisma/client").$Enums.UserRole;
                 id: string;
+                isSuspended: boolean;
                 createdAt: Date;
                 updatedAt: Date;
             };

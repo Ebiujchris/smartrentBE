@@ -25,17 +25,17 @@ let PesapalService = PesapalService_1 = class PesapalService {
     constructor(configService, prisma) {
         this.configService = configService;
         this.prisma = prisma;
-        this.consumerKey = this.configService.get('PESAPAL_CONSUMER_KEY');
-        this.consumerSecret = this.configService.get('PESAPAL_CONSUMER_SECRET');
-        this.environment = this.configService.get('PESAPAL_ENVIRONMENT') || 'sandbox';
-        this.baseUrl = this.environment === 'live'
+        this.consumerKey = this.configService.get('PESAPAL_CONSUMER_KEY') || process.env.PESAPAL_CONSUMER_KEY;
+        this.consumerSecret = this.configService.get('PESAPAL_CONSUMER_SECRET') || process.env.PESAPAL_CONSUMER_SECRET;
+        this.environment = this.configService.get('PESAPAL_ENVIRONMENT') || process.env.PESAPAL_ENVIRONMENT || 'sandbox';
+        this.baseUrl = this.environment.toLowerCase().trim() === 'live'
             ? 'https://pay.pesapal.com/v3/api'
             : 'https://cybqa.pesapal.com/pesapalv3/api';
         if (!this.consumerKey || !this.consumerSecret) {
             this.logger.warn('Pesapal keys not configured. Payment features will be disabled.');
         }
         else {
-            this.logger.log(`Pesapal service initialized in ${this.environment} mode`);
+            this.logger.warn(`Pesapal initialized: env=${this.environment}, baseUrl=${this.baseUrl}, keyLen=${this.consumerKey?.length}`);
         }
     }
     async initiatePayment(dto) {
@@ -67,7 +67,7 @@ let PesapalService = PesapalService_1 = class PesapalService {
                     phone_number: formattedPhone,
                     country_code: 'UG',
                     first_name: dto.metadata?.buyerName?.split(' ')[0] || 'Customer',
-                    last_name: dto.metadata?.buyerName?.split(' ').slice(1).join(' ') || '',
+                    last_name: dto.metadata?.buyerName?.split(' ').slice(1).join(' ') || 'User',
                 },
             };
             const orderResponse = await fetch(`${this.baseUrl}/Transactions/SubmitOrderRequest`, {
@@ -126,10 +126,13 @@ let PesapalService = PesapalService_1 = class PesapalService {
         }
     }
     async getAuthToken() {
-        const response = await fetch(`${this.baseUrl}/Auth/RequestToken`, {
+        const authUrl = `${this.baseUrl}/Auth/RequestToken`;
+        this.logger.warn(`Pesapal auth attempt: URL=${authUrl}, env=${this.environment}, hasKey=${!!this.consumerKey}, hasSecret=${!!this.consumerSecret}`);
+        const response = await fetch(authUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Accept': 'application/json',
             },
             body: JSON.stringify({
                 consumer_key: this.consumerKey,
@@ -138,8 +141,11 @@ let PesapalService = PesapalService_1 = class PesapalService {
         });
         const result = await response.json();
         if (!response.ok || result.error) {
-            throw new Error(result.error?.message || 'Failed to authenticate with Pesapal');
+            const diagMsg = `Pesapal auth FAILED: status=${response.status}, url=${authUrl}, errorCode=${result.error?.code}, env=${this.environment}, keyLen=${this.consumerKey?.length || 0}`;
+            this.logger.error(diagMsg);
+            throw new Error(diagMsg);
         }
+        this.logger.warn('Pesapal auth SUCCESS - token acquired');
         return result.token;
     }
     async registerIPN(token) {

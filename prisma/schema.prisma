@@ -74,12 +74,13 @@ enum ContractStatus {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String
-  fullName  String
-  phone     String?
-  role      UserRole @default(LANDLORD)
+  id          String   @id @default(cuid())
+  email       String   @unique
+  password    String
+  fullName    String
+  phone       String?
+  role        UserRole @default(LANDLORD)
+  isSuspended Boolean  @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -90,6 +91,8 @@ model User {
   tenantProfile   Tenant?
   notifications   Notification[]
   contractsCreated Contract[] @relation("ContractCreator")
+  sentMessages     SupportMessage[] @relation("MessageSender")
+  receivedMessages SupportMessage[] @relation("MessageReceiver")
 
   @@map("users")
 }
@@ -444,4 +447,30 @@ model PesapalTransaction {
   @@index([orderTrackingId])
   @@index([phoneNumber])
   @@map("pesapal_transactions")
+}
+
+model SupportMessage {
+  id        String   @id @default(cuid())
+
+  senderId  String
+  sender    User     @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  receiverId String?
+  receiver   User?   @relation("MessageReceiver", fields: [receiverId], references: [id], onDelete: SetNull)
+
+  subject   String?
+  content   String   @db.Text
+  isRead    Boolean  @default(false)
+
+  // For threading
+  parentId  String?
+  parent    SupportMessage?  @relation("MessageThread", fields: [parentId], references: [id], onDelete: SetNull)
+  replies   SupportMessage[] @relation("MessageThread")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([senderId])
+  @@index([receiverId])
+  @@map("support_messages")
 }

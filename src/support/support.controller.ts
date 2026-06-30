@@ -10,7 +10,7 @@ export class SupportController {
 
   @Get('messages')
   async getUserMessages(@CurrentUser() user: any) {
-    return this.supportService.getUserMessages(user.userId);
+    return this.supportService.getUserMessages(user.id);
   }
 
   @Post('messages')
@@ -18,6 +18,6 @@ export class SupportController {
     @CurrentUser() user: any,
     @Body('content') content: string,
   ) {
-    return this.supportService.sendMessage(user.userId, content);
+    return this.supportService.sendMessage(user.id, content);
   }
 }

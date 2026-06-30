@@ -6,13 +6,27 @@ export class SupportService {
   constructor(private prisma: PrismaService) {}
 
   async getUserMessages(userId: string) {
-    // For now, we'll store support messages in a simple way
-    // In production, you might want a dedicated SupportMessage model
-    // For this implementation, we'll use the Notification model temporarily
-    // or create a new model in the future
-    
-    // Return empty array for now - you can implement proper message storage
-    return [];
+    return this.prisma.supportMessage.findMany({
+      where: {
+        OR: [
+          { senderId: userId },
+          // Include replies to messages where user is the sender
+          { parent: { senderId: userId } }
+        ]
+      },
+      include: {
+        sender: {
+          select: { fullName: true, role: true }
+        },
+        replies: {
+          include: {
+            sender: { select: { fullName: true, role: true } }
+          },
+          orderBy: { createdAt: 'asc' }
+        }
+      },
+      orderBy: { createdAt: 'desc' },
+    });
   }
 
   async sendMessage(userId: string, content: string) {
@@ -25,34 +39,35 @@ export class SupportService {
       throw new NotFoundException('User not found');
     }
 
-    // For now, create a notification to admin about the support message
-    // In production, implement proper support ticket/message system
+    // Create the actual support message
+    const message = await this.prisma.supportMessage.create({
+      data: {
+        content,
+        senderId: userId,
+        subject: `Support request from ${user.fullName}`,
+      },
+      include: {
+        sender: { select: { fullName: true, role: true } }
+      }
+    });
+
+    // Optionally notify admins
     const adminUsers = await this.prisma.user.findMany({
       where: { role: 'ADMIN' },
       select: { id: true },
     });
 
-    // Notify all admins
     for (const admin of adminUsers) {
       await this.prisma.notification.create({
         data: {
           userId: admin.id,
-          title: `Support Message from ${user.fullName}`,
-          message: content,
+          title: `New Support Ticket`,
+          message: `${user.fullName} sent a new support message.`,
           type: 'INFO',
         },
       });
     }
 
-    // Return the message as if it was sent
-    return {
-      id: Date.now().toString(),
-      content,
-      senderId: userId,
-      senderName: user.fullName,
-      senderRole: user.role,
-      createdAt: new Date().toISOString(),
-      isOwn: true,
-    };
+    return message;
   }
 }

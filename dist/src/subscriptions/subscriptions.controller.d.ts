@@ -1,8 +1,10 @@
 import { SubscriptionsService } from './subscriptions.service';
+import { PesapalService } from '../payments/pesapal.service';
 import { UpdateSubscriptionDto } from './dto/update-subscription.dto';
 export declare class SubscriptionsController {
     private readonly subscriptionsService;
-    constructor(subscriptionsService: SubscriptionsService);
+    private readonly pesapalService;
+    constructor(subscriptionsService: SubscriptionsService, pesapalService: PesapalService);
     getSubscription(user: any): Promise<{
         user: {
             email: string;
@@ -59,5 +61,30 @@ export declare class SubscriptionsController {
         daysRemaining: number;
         isExpiringSoon: boolean;
         trialEndsAt?: undefined;
+    }>;
+    initiatePayment(user: any, dto: {
+        planId: string;
+        amount: number;
+        phoneNumber: string;
+    }): Promise<{
+        txRef: string;
+        success: boolean;
+        redirectUrl?: string;
+        message: string;
+        status: "pending" | "successful" | "failed";
+    }>;
+    verifyAndPurchase(user: any, dto: {
+        orderTrackingId: string;
+        planId: string;
+        amount: number;
+        phoneNumber: string;
+    }): Promise<{
+        success: boolean;
+        message: string;
+        status: "pending" | "successful" | "failed";
+    } | {
+        success: boolean;
+        message: string;
+        status?: undefined;
     }>;
 }

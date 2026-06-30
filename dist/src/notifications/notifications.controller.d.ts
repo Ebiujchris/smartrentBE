@@ -14,8 +14,8 @@ export declare class NotificationsController {
         id: string;
         createdAt: Date;
         userId: string;
-        title: string;
         message: string;
+        title: string;
         type: string;
         isRead: boolean;
     }>;
@@ -24,8 +24,8 @@ export declare class NotificationsController {
         id: string;
         createdAt: Date;
         userId: string;
-        title: string;
         message: string;
+        title: string;
         type: string;
         isRead: boolean;
     }>;
