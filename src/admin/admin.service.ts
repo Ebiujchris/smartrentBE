@@ -369,6 +369,34 @@ export class AdminService {
     if (dto.trialEndsAt) data.trialEndsAt = new Date(dto.trialEndsAt);
     if (dto.currentPeriodEnd) data.currentPeriodEnd = new Date(dto.currentPeriodEnd);
 
+    // When activating, always set a valid currentPeriodEnd (1 year from now)
+    if (dto.status === 'ACTIVE') {
+      const now = new Date();
+      const oneYearFromNow = new Date();
+      oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
+      data.currentPeriodStart = now;
+      data.currentPeriodEnd = dto.currentPeriodEnd ? new Date(dto.currentPeriodEnd) : oneYearFromNow;
+
+      // Update plan limits when activating
+      if (dto.plan || subscription.plan) {
+        const plan = dto.plan || subscription.plan;
+        switch (plan) {
+          case 'STARTER':
+            data.maxUnits = data.maxUnits ?? 7;
+            data.amount = data.amount ?? 75000;
+            break;
+          case 'PROFESSIONAL':
+            data.maxUnits = data.maxUnits ?? 30;
+            data.amount = data.amount ?? 150000;
+            break;
+          case 'PREMIUM':
+            data.maxUnits = data.maxUnits ?? 9999;
+            data.amount = data.amount ?? 300000;
+            break;
+        }
+      }
+    }
+
     return this.prisma.subscription.update({
       where: { userId },
       data,

@@ -25,11 +25,14 @@ async function createApp() {
             crossOriginEmbedderPolicy: false,
         }));
         app.enableCors({
-            origin: [
-                'http://localhost:3000',
-                'https://smartrent-fe-blush.vercel.app',
-                process.env.FRONTEND_URL,
-            ].filter(Boolean),
+            origin: (origin, callback) => {
+                if (!origin)
+                    return callback(null, true);
+                if (origin.includes('.vercel.app') || origin.includes('localhost')) {
+                    return callback(null, true);
+                }
+                callback(null, false);
+            },
             credentials: true,
             allowedHeaders: ['Content-Type', 'Authorization'],
             methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
