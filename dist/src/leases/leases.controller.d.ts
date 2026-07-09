@@ -7,10 +7,10 @@ export declare class LeasesController {
     create(user: any, createLeaseDto: CreateLeaseDto): Promise<{
         unit: {
             property: {
+                name: string;
                 id: string;
                 createdAt: Date;
                 updatedAt: Date;
-                name: string;
                 address: string;
                 description: string | null;
                 ownerId: string;
@@ -37,6 +37,8 @@ export declare class LeasesController {
                 role: import("@prisma/client").$Enums.UserRole;
                 id: string;
                 isSuspended: boolean;
+                passwordResetToken: string | null;
+                passwordResetExpires: Date | null;
                 createdAt: Date;
                 updatedAt: Date;
             };
@@ -64,10 +66,10 @@ export declare class LeasesController {
     findAll(user: any): Promise<({
         unit: {
             property: {
+                name: string;
                 id: string;
                 createdAt: Date;
                 updatedAt: Date;
-                name: string;
                 address: string;
                 description: string | null;
                 ownerId: string;
@@ -94,6 +96,8 @@ export declare class LeasesController {
                 role: import("@prisma/client").$Enums.UserRole;
                 id: string;
                 isSuspended: boolean;
+                passwordResetToken: string | null;
+                passwordResetExpires: Date | null;
                 createdAt: Date;
                 updatedAt: Date;
             };
@@ -115,10 +119,10 @@ export declare class LeasesController {
             tenantId: string;
             dueDate: Date;
             leaseId: string;
+            paidDate: Date | null;
             method: import("@prisma/client").$Enums.PaymentMethod | null;
             reference: string | null;
             notes: string | null;
-            paidDate: Date | null;
         }[];
     } & {
         id: string;
@@ -135,10 +139,10 @@ export declare class LeasesController {
     findOne(id: string, user: any): Promise<{
         unit: {
             property: {
+                name: string;
                 id: string;
                 createdAt: Date;
                 updatedAt: Date;
-                name: string;
                 address: string;
                 description: string | null;
                 ownerId: string;
@@ -165,6 +169,8 @@ export declare class LeasesController {
                 role: import("@prisma/client").$Enums.UserRole;
                 id: string;
                 isSuspended: boolean;
+                passwordResetToken: string | null;
+                passwordResetExpires: Date | null;
                 createdAt: Date;
                 updatedAt: Date;
             };
@@ -186,10 +192,10 @@ export declare class LeasesController {
             tenantId: string;
             dueDate: Date;
             leaseId: string;
+            paidDate: Date | null;
             method: import("@prisma/client").$Enums.PaymentMethod | null;
             reference: string | null;
             notes: string | null;
-            paidDate: Date | null;
         }[];
     } & {
         id: string;
@@ -206,10 +212,10 @@ export declare class LeasesController {
     update(id: string, updateLeaseDto: UpdateLeaseDto, user: any): Promise<{
         unit: {
             property: {
+                name: string;
                 id: string;
                 createdAt: Date;
                 updatedAt: Date;
-                name: string;
                 address: string;
                 description: string | null;
                 ownerId: string;
@@ -236,6 +242,8 @@ export declare class LeasesController {
                 role: import("@prisma/client").$Enums.UserRole;
                 id: string;
                 isSuspended: boolean;
+                passwordResetToken: string | null;
+                passwordResetExpires: Date | null;
                 createdAt: Date;
                 updatedAt: Date;
             };

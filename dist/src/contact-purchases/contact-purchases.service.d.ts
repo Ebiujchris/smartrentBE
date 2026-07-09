@@ -32,10 +32,10 @@ export declare class ContactPurchasesService {
         listing: {
             unit: {
                 property: {
+                    name: string;
                     id: string;
                     createdAt: Date;
                     updatedAt: Date;
-                    name: string;
                     address: string;
                     description: string | null;
                     ownerId: string;

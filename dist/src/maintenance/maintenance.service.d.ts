@@ -7,10 +7,10 @@ export declare class MaintenanceService {
     create(userId: string, user: any, createMaintenanceDto: CreateMaintenanceDto): Promise<{
         unit: {
             property: {
+                name: string;
                 id: string;
                 createdAt: Date;
                 updatedAt: Date;
-                name: string;
                 address: string;
                 description: string | null;
                 ownerId: string;
@@ -37,6 +37,8 @@ export declare class MaintenanceService {
                 role: import("@prisma/client").$Enums.UserRole;
                 id: string;
                 isSuspended: boolean;
+                passwordResetToken: string | null;
+                passwordResetExpires: Date | null;
                 createdAt: Date;
                 updatedAt: Date;
             };
@@ -50,6 +52,7 @@ export declare class MaintenanceService {
             occupation: string | null;
         };
     } & {
+        priority: import("@prisma/client").$Enums.MaintenancePriority;
         id: string;
         createdAt: Date;
         updatedAt: Date;
@@ -60,16 +63,15 @@ export declare class MaintenanceService {
         reportedAt: Date;
         notes: string | null;
         title: string;
-        priority: import("@prisma/client").$Enums.MaintenancePriority;
         resolvedAt: Date | null;
     }>;
     findAll(userId: string, user: any): Promise<({
         unit: {
             property: {
+                name: string;
                 id: string;
                 createdAt: Date;
                 updatedAt: Date;
-                name: string;
                 address: string;
                 description: string | null;
                 ownerId: string;
@@ -96,6 +98,8 @@ export declare class MaintenanceService {
                 role: import("@prisma/client").$Enums.UserRole;
                 id: string;
                 isSuspended: boolean;
+                passwordResetToken: string | null;
+                passwordResetExpires: Date | null;
                 createdAt: Date;
                 updatedAt: Date;
             };
@@ -109,6 +113,7 @@ export declare class MaintenanceService {
             occupation: string | null;
         };
     } & {
+        priority: import("@prisma/client").$Enums.MaintenancePriority;
         id: string;
         createdAt: Date;
         updatedAt: Date;
@@ -119,16 +124,15 @@ export declare class MaintenanceService {
         reportedAt: Date;
         notes: string | null;
         title: string;
-        priority: import("@prisma/client").$Enums.MaintenancePriority;
         resolvedAt: Date | null;
     })[]>;
     findOne(id: string, user: any): Promise<{
         unit: {
             property: {
+                name: string;
                 id: string;
                 createdAt: Date;
                 updatedAt: Date;
-                name: string;
                 address: string;
                 description: string | null;
                 ownerId: string;
@@ -155,6 +159,8 @@ export declare class MaintenanceService {
                 role: import("@prisma/client").$Enums.UserRole;
                 id: string;
                 isSuspended: boolean;
+                passwordResetToken: string | null;
+                passwordResetExpires: Date | null;
                 createdAt: Date;
                 updatedAt: Date;
             };
@@ -168,6 +174,7 @@ export declare class MaintenanceService {
             occupation: string | null;
         };
     } & {
+        priority: import("@prisma/client").$Enums.MaintenancePriority;
         id: string;
         createdAt: Date;
         updatedAt: Date;
@@ -178,16 +185,15 @@ export declare class MaintenanceService {
         reportedAt: Date;
         notes: string | null;
         title: string;
-        priority: import("@prisma/client").$Enums.MaintenancePriority;
         resolvedAt: Date | null;
     }>;
     update(id: string, updateMaintenanceDto: UpdateMaintenanceDto, user: any): Promise<{
         unit: {
             property: {
+                name: string;
                 id: string;
                 createdAt: Date;
                 updatedAt: Date;
-                name: string;
                 address: string;
                 description: string | null;
                 ownerId: string;
@@ -214,6 +220,8 @@ export declare class MaintenanceService {
                 role: import("@prisma/client").$Enums.UserRole;
                 id: string;
                 isSuspended: boolean;
+                passwordResetToken: string | null;
+                passwordResetExpires: Date | null;
                 createdAt: Date;
                 updatedAt: Date;
             };
@@ -227,6 +235,7 @@ export declare class MaintenanceService {
             occupation: string | null;
         };
     } & {
+        priority: import("@prisma/client").$Enums.MaintenancePriority;
         id: string;
         createdAt: Date;
         updatedAt: Date;
@@ -237,16 +246,15 @@ export declare class MaintenanceService {
         reportedAt: Date;
         notes: string | null;
         title: string;
-        priority: import("@prisma/client").$Enums.MaintenancePriority;
         resolvedAt: Date | null;
     }>;
     updateStatus(id: string, status: string, notes?: string, user?: any): Promise<{
         unit: {
             property: {
+                name: string;
                 id: string;
                 createdAt: Date;
                 updatedAt: Date;
-                name: string;
                 address: string;
                 description: string | null;
                 ownerId: string;
@@ -273,6 +281,8 @@ export declare class MaintenanceService {
                 role: import("@prisma/client").$Enums.UserRole;
                 id: string;
                 isSuspended: boolean;
+                passwordResetToken: string | null;
+                passwordResetExpires: Date | null;
                 createdAt: Date;
                 updatedAt: Date;
             };
@@ -286,6 +296,7 @@ export declare class MaintenanceService {
             occupation: string | null;
         };
     } & {
+        priority: import("@prisma/client").$Enums.MaintenancePriority;
         id: string;
         createdAt: Date;
         updatedAt: Date;
@@ -296,7 +307,6 @@ export declare class MaintenanceService {
         reportedAt: Date;
         notes: string | null;
         title: string;
-        priority: import("@prisma/client").$Enums.MaintenancePriority;
         resolvedAt: Date | null;
     }>;
     remove(id: string, user: any): Promise<{

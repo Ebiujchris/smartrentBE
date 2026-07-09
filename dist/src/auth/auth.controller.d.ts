@@ -54,4 +54,15 @@ export declare class AuthController {
             occupation: string | null;
         } | null;
     } | null>;
+    forgotPassword(body: {
+        email: string;
+    }): Promise<{
+        message: string;
+    }>;
+    resetPassword(body: {
+        token: string;
+        password: string;
+    }): Promise<{
+        message: string;
+    }>;
 }

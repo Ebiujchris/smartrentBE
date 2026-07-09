@@ -46,13 +46,17 @@ exports.AuthService = void 0;
 const common_1 = require("@nestjs/common");
 const jwt_1 = require("@nestjs/jwt");
 const bcrypt = __importStar(require("bcryptjs"));
+const crypto = __importStar(require("crypto"));
 const prisma_service_1 = require("../prisma/prisma.service");
+const email_service_1 = require("./email.service");
 let AuthService = class AuthService {
     prisma;
     jwtService;
-    constructor(prisma, jwtService) {
+    emailService;
+    constructor(prisma, jwtService, emailService) {
         this.prisma = prisma;
         this.jwtService = jwtService;
+        this.emailService = emailService;
     }
     async register(registerDto) {
         const existingUser = await this.prisma.user.findUnique({
@@ -163,11 +167,47 @@ let AuthService = class AuthService {
     generateToken(userId) {
         return this.jwtService.sign({ sub: userId });
     }
+    async forgotPassword(email) {
+        const user = await this.prisma.user.findUnique({ where: { email } });
+        if (!user)
+            return;
+        const token = crypto.randomBytes(32).toString('hex');
+        const expires = new Date(Date.now() + 60 * 60 * 1000);
+        await this.prisma.user.update({
+            where: { email },
+            data: {
+                passwordResetToken: token,
+                passwordResetExpires: expires,
+            },
+        });
+        await this.emailService.sendPasswordResetEmail(email, token, user.fullName);
+    }
+    async resetPassword(token, newPassword) {
+        const user = await this.prisma.user.findFirst({
+            where: {
+                passwordResetToken: token,
+                passwordResetExpires: { gt: new Date() },
+            },
+        });
+        if (!user) {
+            throw new common_1.BadRequestException('Invalid or expired reset token');
+        }
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        await this.prisma.user.update({
+            where: { id: user.id },
+            data: {
+                password: hashedPassword,
+                passwordResetToken: null,
+                passwordResetExpires: null,
+            },
+        });
+    }
 };
 exports.AuthService = AuthService;
 exports.AuthService = AuthService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
-        jwt_1.JwtService])
+        jwt_1.JwtService,
+        email_service_1.EmailService])
 ], AuthService);
 //# sourceMappingURL=auth.service.js.map

@@ -13,24 +13,24 @@ export declare class SupportController {
                 role: import("@prisma/client").$Enums.UserRole;
             };
         } & {
+            subject: string | null;
             id: string;
             createdAt: Date;
             updatedAt: Date;
             isRead: boolean;
             senderId: string;
             receiverId: string | null;
-            subject: string | null;
             content: string;
             parentId: string | null;
         })[];
     } & {
+        subject: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         isRead: boolean;
         senderId: string;
         receiverId: string | null;
-        subject: string | null;
         content: string;
         parentId: string | null;
     })[]>;
@@ -40,13 +40,13 @@ export declare class SupportController {
             role: import("@prisma/client").$Enums.UserRole;
         };
     } & {
+        subject: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         isRead: boolean;
         senderId: string;
         receiverId: string | null;
-        subject: string | null;
         content: string;
         parentId: string | null;
     }>;

@@ -19,10 +19,10 @@ export declare class PropertiesService {
         _count: {
             units: number;
         };
+        name: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
         address: string;
         description: string | null;
         ownerId: string;
@@ -68,28 +68,28 @@ export declare class PropertiesService {
             size: string | null;
             propertyId: string;
         }[];
+        name: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
         address: string;
         description: string | null;
         ownerId: string;
     }>;
     create(data: any, userId: string): Promise<{
+        name: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
         address: string;
         description: string | null;
         ownerId: string;
     }>;
     update(id: string, data: any, userId: string): Promise<{
+        name: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
         address: string;
         description: string | null;
         ownerId: string;
@@ -152,10 +152,10 @@ export declare class PropertiesService {
     }>;
     getUnitById(unitId: string, userId: string): Promise<{
         property: {
+            name: string;
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            name: string;
             address: string;
             description: string | null;
             ownerId: string;
@@ -186,10 +186,10 @@ export declare class PropertiesService {
                 tenantId: string;
                 dueDate: Date;
                 leaseId: string;
+                paidDate: Date | null;
                 method: import("@prisma/client").$Enums.PaymentMethod | null;
                 reference: string | null;
                 notes: string | null;
-                paidDate: Date | null;
             }[];
         } & {
             id: string;
@@ -204,6 +204,7 @@ export declare class PropertiesService {
             deposit: import("@prisma/client-runtime-utils").Decimal;
         })[];
         maintenanceRequests: {
+            priority: import("@prisma/client").$Enums.MaintenancePriority;
             id: string;
             createdAt: Date;
             updatedAt: Date;
@@ -214,7 +215,6 @@ export declare class PropertiesService {
             reportedAt: Date;
             notes: string | null;
             title: string;
-            priority: import("@prisma/client").$Enums.MaintenancePriority;
             resolvedAt: Date | null;
         }[];
     } & {

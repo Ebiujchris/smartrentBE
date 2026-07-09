@@ -33,6 +33,14 @@ let AuthController = class AuthController {
     async getProfile(user) {
         return this.authService.getProfile(user.id);
     }
+    async forgotPassword(body) {
+        await this.authService.forgotPassword(body.email);
+        return { message: 'If an account with that email exists, a reset link has been sent.' };
+    }
+    async resetPassword(body) {
+        await this.authService.resetPassword(body.token, body.password);
+        return { message: 'Password reset successfully. You can now log in.' };
+    }
 };
 exports.AuthController = AuthController;
 __decorate([
@@ -57,6 +65,20 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "getProfile", null);
+__decorate([
+    (0, common_1.Post)('forgot-password'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "forgotPassword", null);
+__decorate([
+    (0, common_1.Post)('reset-password'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "resetPassword", null);
 exports.AuthController = AuthController = __decorate([
     (0, common_1.Controller)('auth'),
     __metadata("design:paramtypes", [auth_service_1.AuthService])

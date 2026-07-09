@@ -90,10 +90,10 @@ export declare class AdminController {
             tenantId: string;
             dueDate: Date;
             leaseId: string;
+            paidDate: Date | null;
             method: import("@prisma/client").$Enums.PaymentMethod | null;
             reference: string | null;
             notes: string | null;
-            paidDate: Date | null;
         })[];
     }>;
     getUserGrowthData(): Promise<{
@@ -161,10 +161,10 @@ export declare class AdminController {
                 rentAmount: import("@prisma/client-runtime-utils").Decimal;
             }[];
         } & {
+            name: string;
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            name: string;
             address: string;
             description: string | null;
             ownerId: string;
@@ -173,10 +173,10 @@ export declare class AdminController {
             leases: ({
                 unit: {
                     property: {
+                        name: string;
                         id: string;
                         createdAt: Date;
                         updatedAt: Date;
-                        name: string;
                         address: string;
                         description: string | null;
                         ownerId: string;
@@ -292,14 +292,14 @@ export declare class AdminController {
     }>;
     getMessages(page?: string, limit?: string, unreadOnly?: string): Promise<{
         messages: ({
-            _count: {
-                replies: number;
-            };
             sender: {
                 email: string;
                 fullName: string;
                 role: import("@prisma/client").$Enums.UserRole;
                 id: string;
+            };
+            _count: {
+                replies: number;
             };
             replies: ({
                 sender: {
@@ -308,24 +308,24 @@ export declare class AdminController {
                     id: string;
                 };
             } & {
+                subject: string | null;
                 id: string;
                 createdAt: Date;
                 updatedAt: Date;
                 isRead: boolean;
                 senderId: string;
                 receiverId: string | null;
-                subject: string | null;
                 content: string;
                 parentId: string | null;
             })[];
         } & {
+            subject: string | null;
             id: string;
             createdAt: Date;
             updatedAt: Date;
             isRead: boolean;
             senderId: string;
             receiverId: string | null;
-            subject: string | null;
             content: string;
             parentId: string | null;
         })[];
@@ -337,13 +337,13 @@ export declare class AdminController {
         };
     }>;
     markMessageAsRead(id: string): Promise<{
+        subject: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         isRead: boolean;
         senderId: string;
         receiverId: string | null;
-        subject: string | null;
         content: string;
         parentId: string | null;
     }>;
@@ -354,13 +354,13 @@ export declare class AdminController {
             id: string;
         };
     } & {
+        subject: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         isRead: boolean;
         senderId: string;
         receiverId: string | null;
-        subject: string | null;
         content: string;
         parentId: string | null;
     }>;
@@ -380,10 +380,10 @@ export declare class AdminController {
                 unitNumber: string;
                 rentAmount: import("@prisma/client-runtime-utils").Decimal;
             }[];
+            name: string;
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            name: string;
             address: string;
             description: string | null;
             ownerId: string;
@@ -451,10 +451,10 @@ export declare class AdminController {
             tenantId: string;
             dueDate: Date;
             leaseId: string;
+            paidDate: Date | null;
             method: import("@prisma/client").$Enums.PaymentMethod | null;
             reference: string | null;
             notes: string | null;
-            paidDate: Date | null;
         })[];
         totalRevenue: number | import("@prisma/client-runtime-utils").Decimal;
         pagination: {

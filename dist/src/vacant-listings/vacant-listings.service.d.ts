@@ -14,10 +14,10 @@ export declare class VacantListingsService {
                     id: string;
                 };
             } & {
+                name: string;
                 id: string;
                 createdAt: Date;
                 updatedAt: Date;
-                name: string;
                 address: string;
                 description: string | null;
                 ownerId: string;
@@ -59,8 +59,8 @@ export declare class VacantListingsService {
     }): Promise<({
         unit: {
             property: {
-                id: string;
                 name: string;
+                id: string;
                 address: string;
                 description: string | null;
             };
@@ -96,8 +96,8 @@ export declare class VacantListingsService {
     findMyListings(userId: string): Promise<({
         unit: {
             property: {
-                id: string;
                 name: string;
+                id: string;
                 address: string;
                 description: string | null;
             };
@@ -140,10 +140,10 @@ export declare class VacantListingsService {
                     id: string;
                 };
             } & {
+                name: string;
                 id: string;
                 createdAt: Date;
                 updatedAt: Date;
-                name: string;
                 address: string;
                 description: string | null;
                 ownerId: string;
@@ -187,10 +187,10 @@ export declare class VacantListingsService {
                     id: string;
                 };
             } & {
+                name: string;
                 id: string;
                 createdAt: Date;
                 updatedAt: Date;
-                name: string;
                 address: string;
                 description: string | null;
                 ownerId: string;
@@ -230,8 +230,8 @@ export declare class VacantListingsService {
     incrementViewCount(id: string): Promise<{
         unit: {
             property: {
-                id: string;
                 name: string;
+                id: string;
                 address: string;
                 description: string | null;
             };

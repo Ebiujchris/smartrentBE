@@ -39,6 +39,8 @@ export declare class JwtStrategy extends JwtStrategy_base {
         role: import("@prisma/client").$Enums.UserRole;
         id: string;
         isSuspended: boolean;
+        passwordResetToken: string | null;
+        passwordResetExpires: Date | null;
         createdAt: Date;
         updatedAt: Date;
     }>;

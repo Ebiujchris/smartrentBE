@@ -14,10 +14,10 @@ export declare class VacantListingsController {
                     id: string;
                 };
             } & {
+                name: string;
                 id: string;
                 createdAt: Date;
                 updatedAt: Date;
-                name: string;
                 address: string;
                 description: string | null;
                 ownerId: string;
@@ -54,8 +54,8 @@ export declare class VacantListingsController {
     findAllPublic(bedrooms?: number, minPrice?: number, maxPrice?: number, location?: string): Promise<({
         unit: {
             property: {
-                id: string;
                 name: string;
+                id: string;
                 address: string;
                 description: string | null;
             };
@@ -91,8 +91,8 @@ export declare class VacantListingsController {
     findMyListings(user: any): Promise<({
         unit: {
             property: {
-                id: string;
                 name: string;
+                id: string;
                 address: string;
                 description: string | null;
             };
@@ -135,10 +135,10 @@ export declare class VacantListingsController {
                     id: string;
                 };
             } & {
+                name: string;
                 id: string;
                 createdAt: Date;
                 updatedAt: Date;
-                name: string;
                 address: string;
                 description: string | null;
                 ownerId: string;
@@ -182,10 +182,10 @@ export declare class VacantListingsController {
                     id: string;
                 };
             } & {
+                name: string;
                 id: string;
                 createdAt: Date;
                 updatedAt: Date;
-                name: string;
                 address: string;
                 description: string | null;
                 ownerId: string;
@@ -225,8 +225,8 @@ export declare class VacantListingsController {
     incrementViewCount(id: string): Promise<{
         unit: {
             property: {
-                id: string;
                 name: string;
+                id: string;
                 address: string;
                 description: string | null;
             };

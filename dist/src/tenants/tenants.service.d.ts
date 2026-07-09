@@ -22,6 +22,8 @@ export declare class TenantsService {
         role: import("@prisma/client").$Enums.UserRole;
         id: string;
         isSuspended: boolean;
+        passwordResetToken: string | null;
+        passwordResetExpires: Date | null;
         createdAt: Date;
         updatedAt: Date;
     }>;
@@ -37,10 +39,10 @@ export declare class TenantsService {
         leases: ({
             unit: {
                 property: {
+                    name: string;
                     id: string;
                     createdAt: Date;
                     updatedAt: Date;
-                    name: string;
                     address: string;
                     description: string | null;
                     ownerId: string;
@@ -67,10 +69,10 @@ export declare class TenantsService {
                 tenantId: string;
                 dueDate: Date;
                 leaseId: string;
+                paidDate: Date | null;
                 method: import("@prisma/client").$Enums.PaymentMethod | null;
                 reference: string | null;
                 notes: string | null;
-                paidDate: Date | null;
             }[];
         } & {
             id: string;
@@ -84,7 +86,22 @@ export declare class TenantsService {
             endDate: Date;
             deposit: import("@prisma/client-runtime-utils").Decimal;
         })[];
+        payments: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            status: import("@prisma/client").$Enums.PaymentStatus;
+            amount: import("@prisma/client-runtime-utils").Decimal;
+            tenantId: string;
+            dueDate: Date;
+            leaseId: string;
+            paidDate: Date | null;
+            method: import("@prisma/client").$Enums.PaymentMethod | null;
+            reference: string | null;
+            notes: string | null;
+        }[];
         maintenanceRequests: {
+            priority: import("@prisma/client").$Enums.MaintenancePriority;
             id: string;
             createdAt: Date;
             updatedAt: Date;
@@ -95,22 +112,7 @@ export declare class TenantsService {
             reportedAt: Date;
             notes: string | null;
             title: string;
-            priority: import("@prisma/client").$Enums.MaintenancePriority;
             resolvedAt: Date | null;
-        }[];
-        payments: {
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            status: import("@prisma/client").$Enums.PaymentStatus;
-            amount: import("@prisma/client-runtime-utils").Decimal;
-            tenantId: string;
-            dueDate: Date;
-            leaseId: string;
-            method: import("@prisma/client").$Enums.PaymentMethod | null;
-            reference: string | null;
-            notes: string | null;
-            paidDate: Date | null;
         }[];
     } & {
         id: string;
@@ -130,6 +132,8 @@ export declare class TenantsService {
             role: import("@prisma/client").$Enums.UserRole;
             id: string;
             isSuspended: boolean;
+            passwordResetToken: string | null;
+            passwordResetExpires: Date | null;
             createdAt: Date;
             updatedAt: Date;
         };
@@ -159,10 +163,10 @@ export declare class TenantsService {
         leases: ({
             unit: {
                 property: {
+                    name: string;
                     id: string;
                     createdAt: Date;
                     updatedAt: Date;
-                    name: string;
                     address: string;
                     description: string | null;
                     ownerId: string;
@@ -189,10 +193,10 @@ export declare class TenantsService {
                 tenantId: string;
                 dueDate: Date;
                 leaseId: string;
+                paidDate: Date | null;
                 method: import("@prisma/client").$Enums.PaymentMethod | null;
                 reference: string | null;
                 notes: string | null;
-                paidDate: Date | null;
             }[];
         } & {
             id: string;
@@ -206,7 +210,22 @@ export declare class TenantsService {
             endDate: Date;
             deposit: import("@prisma/client-runtime-utils").Decimal;
         })[];
+        payments: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            status: import("@prisma/client").$Enums.PaymentStatus;
+            amount: import("@prisma/client-runtime-utils").Decimal;
+            tenantId: string;
+            dueDate: Date;
+            leaseId: string;
+            paidDate: Date | null;
+            method: import("@prisma/client").$Enums.PaymentMethod | null;
+            reference: string | null;
+            notes: string | null;
+        }[];
         maintenanceRequests: {
+            priority: import("@prisma/client").$Enums.MaintenancePriority;
             id: string;
             createdAt: Date;
             updatedAt: Date;
@@ -217,22 +236,7 @@ export declare class TenantsService {
             reportedAt: Date;
             notes: string | null;
             title: string;
-            priority: import("@prisma/client").$Enums.MaintenancePriority;
             resolvedAt: Date | null;
-        }[];
-        payments: {
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            status: import("@prisma/client").$Enums.PaymentStatus;
-            amount: import("@prisma/client-runtime-utils").Decimal;
-            tenantId: string;
-            dueDate: Date;
-            leaseId: string;
-            method: import("@prisma/client").$Enums.PaymentMethod | null;
-            reference: string | null;
-            notes: string | null;
-            paidDate: Date | null;
         }[];
     } & {
         id: string;

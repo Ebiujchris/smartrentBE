@@ -24,6 +24,8 @@ export declare class PaymentsController {
                 role: import("@prisma/client").$Enums.UserRole;
                 id: string;
                 isSuspended: boolean;
+                passwordResetToken: string | null;
+                passwordResetExpires: Date | null;
                 createdAt: Date;
                 updatedAt: Date;
             };
@@ -39,10 +41,10 @@ export declare class PaymentsController {
         lease: {
             unit: {
                 property: {
+                    name: string;
                     id: string;
                     createdAt: Date;
                     updatedAt: Date;
-                    name: string;
                     address: string;
                     description: string | null;
                     ownerId: string;
@@ -81,10 +83,10 @@ export declare class PaymentsController {
         tenantId: string;
         dueDate: Date;
         leaseId: string;
+        paidDate: Date | null;
         method: import("@prisma/client").$Enums.PaymentMethod | null;
         reference: string | null;
         notes: string | null;
-        paidDate: Date | null;
     }>;
     findAll(user: any): Promise<any>;
     getOverdue(user: any): Promise<({
@@ -97,6 +99,8 @@ export declare class PaymentsController {
                 role: import("@prisma/client").$Enums.UserRole;
                 id: string;
                 isSuspended: boolean;
+                passwordResetToken: string | null;
+                passwordResetExpires: Date | null;
                 createdAt: Date;
                 updatedAt: Date;
             };
@@ -112,10 +116,10 @@ export declare class PaymentsController {
         lease: {
             unit: {
                 property: {
+                    name: string;
                     id: string;
                     createdAt: Date;
                     updatedAt: Date;
-                    name: string;
                     address: string;
                     description: string | null;
                     ownerId: string;
@@ -154,10 +158,10 @@ export declare class PaymentsController {
         tenantId: string;
         dueDate: Date;
         leaseId: string;
+        paidDate: Date | null;
         method: import("@prisma/client").$Enums.PaymentMethod | null;
         reference: string | null;
         notes: string | null;
-        paidDate: Date | null;
     })[]>;
     findByTenant(tenantId: string): Promise<({
         tenant: {
@@ -169,6 +173,8 @@ export declare class PaymentsController {
                 role: import("@prisma/client").$Enums.UserRole;
                 id: string;
                 isSuspended: boolean;
+                passwordResetToken: string | null;
+                passwordResetExpires: Date | null;
                 createdAt: Date;
                 updatedAt: Date;
             };
@@ -184,10 +190,10 @@ export declare class PaymentsController {
         lease: {
             unit: {
                 property: {
+                    name: string;
                     id: string;
                     createdAt: Date;
                     updatedAt: Date;
-                    name: string;
                     address: string;
                     description: string | null;
                     ownerId: string;
@@ -226,10 +232,10 @@ export declare class PaymentsController {
         tenantId: string;
         dueDate: Date;
         leaseId: string;
+        paidDate: Date | null;
         method: import("@prisma/client").$Enums.PaymentMethod | null;
         reference: string | null;
         notes: string | null;
-        paidDate: Date | null;
     })[]>;
     findOne(id: string): Promise<{
         tenant: {
@@ -241,6 +247,8 @@ export declare class PaymentsController {
                 role: import("@prisma/client").$Enums.UserRole;
                 id: string;
                 isSuspended: boolean;
+                passwordResetToken: string | null;
+                passwordResetExpires: Date | null;
                 createdAt: Date;
                 updatedAt: Date;
             };
@@ -256,10 +264,10 @@ export declare class PaymentsController {
         lease: {
             unit: {
                 property: {
+                    name: string;
                     id: string;
                     createdAt: Date;
                     updatedAt: Date;
-                    name: string;
                     address: string;
                     description: string | null;
                     ownerId: string;
@@ -298,10 +306,10 @@ export declare class PaymentsController {
         tenantId: string;
         dueDate: Date;
         leaseId: string;
+        paidDate: Date | null;
         method: import("@prisma/client").$Enums.PaymentMethod | null;
         reference: string | null;
         notes: string | null;
-        paidDate: Date | null;
     }>;
     update(id: string, updatePaymentDto: UpdatePaymentDto): Promise<{
         tenant: {
@@ -313,6 +321,8 @@ export declare class PaymentsController {
                 role: import("@prisma/client").$Enums.UserRole;
                 id: string;
                 isSuspended: boolean;
+                passwordResetToken: string | null;
+                passwordResetExpires: Date | null;
                 createdAt: Date;
                 updatedAt: Date;
             };
@@ -328,10 +338,10 @@ export declare class PaymentsController {
         lease: {
             unit: {
                 property: {
+                    name: string;
                     id: string;
                     createdAt: Date;
                     updatedAt: Date;
-                    name: string;
                     address: string;
                     description: string | null;
                     ownerId: string;
@@ -370,10 +380,10 @@ export declare class PaymentsController {
         tenantId: string;
         dueDate: Date;
         leaseId: string;
+        paidDate: Date | null;
         method: import("@prisma/client").$Enums.PaymentMethod | null;
         reference: string | null;
         notes: string | null;
-        paidDate: Date | null;
     }>;
     fixPaymentDates(): Promise<{
         message: string;
@@ -390,10 +400,10 @@ export declare class PaymentsController {
             deposit: number;
             unit: {
                 property: {
+                    name: string;
                     id: string;
                     createdAt: Date;
                     updatedAt: Date;
-                    name: string;
                     address: string;
                     description: string | null;
                     ownerId: string;
@@ -429,6 +439,8 @@ export declare class PaymentsController {
                 role: import("@prisma/client").$Enums.UserRole;
                 id: string;
                 isSuspended: boolean;
+                passwordResetToken: string | null;
+                passwordResetExpires: Date | null;
                 createdAt: Date;
                 updatedAt: Date;
             };
@@ -448,10 +460,10 @@ export declare class PaymentsController {
         tenantId: string;
         dueDate: Date;
         leaseId: string;
+        paidDate: Date | null;
         method: import("@prisma/client").$Enums.PaymentMethod | null;
         reference: string | null;
         notes: string | null;
-        paidDate: Date | null;
     }>;
     remove(id: string): Promise<{
         message: string;
