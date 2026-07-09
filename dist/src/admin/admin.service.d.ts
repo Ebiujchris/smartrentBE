@@ -167,10 +167,10 @@ export declare class AdminService {
                 rentAmount: import("@prisma/client-runtime-utils").Decimal;
             }[];
         } & {
-            name: string;
             id: string;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
             address: string;
             description: string | null;
             ownerId: string;
@@ -179,10 +179,10 @@ export declare class AdminService {
             leases: ({
                 unit: {
                     property: {
-                        name: string;
                         id: string;
                         createdAt: Date;
                         updatedAt: Date;
+                        name: string;
                         address: string;
                         description: string | null;
                         ownerId: string;
@@ -307,14 +307,14 @@ export declare class AdminService {
         unreadOnly?: boolean;
     }): Promise<{
         messages: ({
+            _count: {
+                replies: number;
+            };
             sender: {
                 email: string;
                 fullName: string;
                 role: import("@prisma/client").$Enums.UserRole;
                 id: string;
-            };
-            _count: {
-                replies: number;
             };
             replies: ({
                 sender: {
@@ -399,10 +399,10 @@ export declare class AdminService {
                 unitNumber: string;
                 rentAmount: import("@prisma/client-runtime-utils").Decimal;
             }[];
-            name: string;
             id: string;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
             address: string;
             description: string | null;
             ownerId: string;

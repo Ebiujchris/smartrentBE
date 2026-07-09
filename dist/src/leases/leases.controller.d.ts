@@ -7,10 +7,10 @@ export declare class LeasesController {
     create(user: any, createLeaseDto: CreateLeaseDto): Promise<{
         unit: {
             property: {
-                name: string;
                 id: string;
                 createdAt: Date;
                 updatedAt: Date;
+                name: string;
                 address: string;
                 description: string | null;
                 ownerId: string;
@@ -66,10 +66,10 @@ export declare class LeasesController {
     findAll(user: any): Promise<({
         unit: {
             property: {
-                name: string;
                 id: string;
                 createdAt: Date;
                 updatedAt: Date;
+                name: string;
                 address: string;
                 description: string | null;
                 ownerId: string;
@@ -139,10 +139,10 @@ export declare class LeasesController {
     findOne(id: string, user: any): Promise<{
         unit: {
             property: {
-                name: string;
                 id: string;
                 createdAt: Date;
                 updatedAt: Date;
+                name: string;
                 address: string;
                 description: string | null;
                 ownerId: string;
@@ -212,10 +212,10 @@ export declare class LeasesController {
     update(id: string, updateLeaseDto: UpdateLeaseDto, user: any): Promise<{
         unit: {
             property: {
-                name: string;
                 id: string;
                 createdAt: Date;
                 updatedAt: Date;
+                name: string;
                 address: string;
                 description: string | null;
                 ownerId: string;

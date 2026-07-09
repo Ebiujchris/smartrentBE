@@ -19,10 +19,10 @@ export declare class PropertiesController {
         _count: {
             units: number;
         };
-        name: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         address: string;
         description: string | null;
         ownerId: string;
@@ -68,28 +68,28 @@ export declare class PropertiesController {
             size: string | null;
             propertyId: string;
         }[];
-        name: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         address: string;
         description: string | null;
         ownerId: string;
     }>;
     create(data: any, user: any): Promise<{
-        name: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         address: string;
         description: string | null;
         ownerId: string;
     }>;
     update(id: string, data: any, user: any): Promise<{
-        name: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         address: string;
         description: string | null;
         ownerId: string;
@@ -152,10 +152,10 @@ export declare class PropertiesController {
     }>;
     getUnit(unitId: string, user: any): Promise<{
         property: {
-            name: string;
             id: string;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
             address: string;
             description: string | null;
             ownerId: string;
@@ -204,7 +204,6 @@ export declare class PropertiesController {
             deposit: import("@prisma/client-runtime-utils").Decimal;
         })[];
         maintenanceRequests: {
-            priority: import("@prisma/client").$Enums.MaintenancePriority;
             id: string;
             createdAt: Date;
             updatedAt: Date;
@@ -215,6 +214,7 @@ export declare class PropertiesController {
             reportedAt: Date;
             notes: string | null;
             title: string;
+            priority: import("@prisma/client").$Enums.MaintenancePriority;
             resolvedAt: Date | null;
         }[];
     } & {

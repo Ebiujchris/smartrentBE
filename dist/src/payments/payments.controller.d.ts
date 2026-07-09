@@ -41,10 +41,10 @@ export declare class PaymentsController {
         lease: {
             unit: {
                 property: {
-                    name: string;
                     id: string;
                     createdAt: Date;
                     updatedAt: Date;
+                    name: string;
                     address: string;
                     description: string | null;
                     ownerId: string;
@@ -116,10 +116,10 @@ export declare class PaymentsController {
         lease: {
             unit: {
                 property: {
-                    name: string;
                     id: string;
                     createdAt: Date;
                     updatedAt: Date;
+                    name: string;
                     address: string;
                     description: string | null;
                     ownerId: string;
@@ -190,10 +190,10 @@ export declare class PaymentsController {
         lease: {
             unit: {
                 property: {
-                    name: string;
                     id: string;
                     createdAt: Date;
                     updatedAt: Date;
+                    name: string;
                     address: string;
                     description: string | null;
                     ownerId: string;
@@ -264,10 +264,10 @@ export declare class PaymentsController {
         lease: {
             unit: {
                 property: {
-                    name: string;
                     id: string;
                     createdAt: Date;
                     updatedAt: Date;
+                    name: string;
                     address: string;
                     description: string | null;
                     ownerId: string;
@@ -338,10 +338,10 @@ export declare class PaymentsController {
         lease: {
             unit: {
                 property: {
-                    name: string;
                     id: string;
                     createdAt: Date;
                     updatedAt: Date;
+                    name: string;
                     address: string;
                     description: string | null;
                     ownerId: string;
@@ -400,10 +400,10 @@ export declare class PaymentsController {
             deposit: number;
             unit: {
                 property: {
-                    name: string;
                     id: string;
                     createdAt: Date;
                     updatedAt: Date;
+                    name: string;
                     address: string;
                     description: string | null;
                     ownerId: string;

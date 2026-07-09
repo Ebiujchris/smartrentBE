@@ -39,10 +39,10 @@ export declare class TenantsController {
         leases: ({
             unit: {
                 property: {
-                    name: string;
                     id: string;
                     createdAt: Date;
                     updatedAt: Date;
+                    name: string;
                     address: string;
                     description: string | null;
                     ownerId: string;
@@ -101,7 +101,6 @@ export declare class TenantsController {
             notes: string | null;
         }[];
         maintenanceRequests: {
-            priority: import("@prisma/client").$Enums.MaintenancePriority;
             id: string;
             createdAt: Date;
             updatedAt: Date;
@@ -112,6 +111,7 @@ export declare class TenantsController {
             reportedAt: Date;
             notes: string | null;
             title: string;
+            priority: import("@prisma/client").$Enums.MaintenancePriority;
             resolvedAt: Date | null;
         }[];
     } & {
@@ -134,10 +134,10 @@ export declare class TenantsController {
         leases: ({
             unit: {
                 property: {
-                    name: string;
                     id: string;
                     createdAt: Date;
                     updatedAt: Date;
+                    name: string;
                     address: string;
                     description: string | null;
                     ownerId: string;
@@ -196,7 +196,6 @@ export declare class TenantsController {
             notes: string | null;
         }[];
         maintenanceRequests: {
-            priority: import("@prisma/client").$Enums.MaintenancePriority;
             id: string;
             createdAt: Date;
             updatedAt: Date;
@@ -207,6 +206,7 @@ export declare class TenantsController {
             reportedAt: Date;
             notes: string | null;
             title: string;
+            priority: import("@prisma/client").$Enums.MaintenancePriority;
             resolvedAt: Date | null;
         }[];
     } & {
