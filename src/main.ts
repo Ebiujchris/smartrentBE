@@ -38,9 +38,9 @@ async function bootstrap() {
         process.env.ADMIN_FRONTEND_URL,
       ].filter(Boolean);
 
-      // Allow all vercel preview deployments
-      const isVercelPreview = origin.includes('.vercel.app');
-      const isAllowed = allowedOrigins.includes(origin) || isVercelPreview;
+      // Allow all vercel preview deployments and any vercel.app domain
+      const isVercelApp = origin.includes('.vercel.app');
+      const isAllowed = allowedOrigins.includes(origin) || isVercelApp;
 
       callback(null, isAllowed);
     },

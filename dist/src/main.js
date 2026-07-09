@@ -22,14 +22,24 @@ async function bootstrap() {
         crossOriginEmbedderPolicy: false,
     }));
     app.enableCors({
-        origin: [
-            'http://localhost:3000',
-            'http://localhost:3001',
-            'http://localhost:3002',
-            'https://smartrent-fe-blush.vercel.app',
-            process.env.FRONTEND_URL,
-            process.env.ADMIN_FRONTEND_URL,
-        ].filter(Boolean),
+        origin: (origin, callback) => {
+            if (!origin)
+                return callback(null, true);
+            const allowedOrigins = [
+                'http://localhost:3000',
+                'http://localhost:3001',
+                'http://localhost:3002',
+                'http://localhost:3003',
+                'https://smartrent-fe-blush.vercel.app',
+                'https://admin-smartrent-kappa.vercel.app',
+                'https://smartrent-be.vercel.app',
+                process.env.FRONTEND_URL,
+                process.env.ADMIN_FRONTEND_URL,
+            ].filter(Boolean);
+            const isVercelApp = origin.includes('.vercel.app');
+            const isAllowed = allowedOrigins.includes(origin) || isVercelApp;
+            callback(null, isAllowed);
+        },
         credentials: true,
         allowedHeaders: ['Content-Type', 'Authorization'],
         methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
