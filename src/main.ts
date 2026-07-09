@@ -27,6 +27,7 @@ async function bootstrap() {
       'http://localhost:3001',
       'http://localhost:3002',
       'https://smartrent-fe-blush.vercel.app',
+      'https://admin-smartrent-kappa.vercel.app',
       process.env.FRONTEND_URL,
       process.env.ADMIN_FRONTEND_URL,
     ].filter(Boolean),
