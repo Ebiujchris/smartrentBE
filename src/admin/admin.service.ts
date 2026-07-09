@@ -369,13 +369,13 @@ export class AdminService {
     if (dto.trialEndsAt) data.trialEndsAt = new Date(dto.trialEndsAt);
     if (dto.currentPeriodEnd) data.currentPeriodEnd = new Date(dto.currentPeriodEnd);
 
-    // When activating, always set a valid currentPeriodEnd (1 year from now)
+    // When activating, always set a valid currentPeriodEnd (1 month from now)
     if (dto.status === 'ACTIVE') {
       const now = new Date();
-      const oneYearFromNow = new Date();
-      oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
+      const oneMonthFromNow = new Date();
+      oneMonthFromNow.setMonth(oneMonthFromNow.getMonth() + 1);
       data.currentPeriodStart = now;
-      data.currentPeriodEnd = dto.currentPeriodEnd ? new Date(dto.currentPeriodEnd) : oneYearFromNow;
+      data.currentPeriodEnd = dto.currentPeriodEnd ? new Date(dto.currentPeriodEnd) : oneMonthFromNow;
 
       // Update plan limits when activating
       if (dto.plan || subscription.plan) {
