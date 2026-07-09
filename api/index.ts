@@ -30,11 +30,14 @@ async function createApp() {
     
     // CORS configuration
     app.enableCors({
-      origin: [
-        'http://localhost:3000',
-        'https://smartrent-fe-blush.vercel.app',
-        process.env.FRONTEND_URL,
-      ].filter(Boolean),
+      origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+        if (!origin) return callback(null, true);
+        // Allow all vercel.app domains and localhost
+        if (origin.includes('.vercel.app') || origin.includes('localhost')) {
+          return callback(null, true);
+        }
+        callback(null, false);
+      },
       credentials: true,
       allowedHeaders: ['Content-Type', 'Authorization'],
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
