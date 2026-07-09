@@ -22,15 +22,28 @@ async function bootstrap() {
   
   // CORS configuration
   app.enableCors({
-    origin: [
-      'http://localhost:3000',
-      'http://localhost:3001',
-      'http://localhost:3002',
-      'https://smartrent-fe-blush.vercel.app',
-      'https://admin-smartrent-kappa.vercel.app',
-      process.env.FRONTEND_URL,
-      process.env.ADMIN_FRONTEND_URL,
-    ].filter(Boolean),
+    origin: (origin, callback) => {
+      // Allow requests with no origin (mobile apps, curl, etc.)
+      if (!origin) return callback(null, true);
+
+      const allowedOrigins = [
+        'http://localhost:3000',
+        'http://localhost:3001',
+        'http://localhost:3002',
+        'http://localhost:3003',
+        'https://smartrent-fe-blush.vercel.app',
+        'https://admin-smartrent-kappa.vercel.app',
+        'https://smartrent-be.vercel.app',
+        process.env.FRONTEND_URL,
+        process.env.ADMIN_FRONTEND_URL,
+      ].filter(Boolean);
+
+      // Allow all vercel preview deployments
+      const isVercelPreview = origin.includes('.vercel.app');
+      const isAllowed = allowedOrigins.includes(origin) || isVercelPreview;
+
+      callback(null, isAllowed);
+    },
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization'],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
