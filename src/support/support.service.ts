@@ -6,27 +6,34 @@ export class SupportService {
   constructor(private prisma: PrismaService) {}
 
   async getUserMessages(userId: string) {
-    return this.prisma.supportMessage.findMany({
+    // Get all messages in the conversation thread for this user
+    // This includes: messages sent by user + messages in threads where user sent the original message
+    const messages = await this.prisma.supportMessage.findMany({
       where: {
         OR: [
+          // User's own messages (top-level or replies)
           { senderId: userId },
-          // Include replies to messages where user is the sender
-          { parent: { senderId: userId } }
+          // Replies to user's messages (when user is the original sender)
+          { parent: { senderId: userId } },
+          // Messages where user is the receiver (admin replies to user)
+          { receiverId: userId },
         ]
       },
       include: {
         sender: {
-          select: { fullName: true, role: true }
+          select: { id: true, fullName: true, role: true }
         },
         replies: {
           include: {
-            sender: { select: { fullName: true, role: true } }
+            sender: { select: { id: true, fullName: true, role: true } }
           },
           orderBy: { createdAt: 'asc' }
         }
       },
       orderBy: { createdAt: 'desc' },
     });
+
+    return messages;
   }
 
   async sendMessage(userId: string, content: string) {

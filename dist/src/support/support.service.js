@@ -18,36 +18,40 @@ let SupportService = class SupportService {
         this.prisma = prisma;
     }
     async getUserMessages(userId) {
-        return this.prisma.supportMessage.findMany({
+        const messages = await this.prisma.supportMessage.findMany({
             where: {
                 OR: [
                     { senderId: userId },
-                    { parent: { senderId: userId } }
+                    { parent: { senderId: userId } },
+                    { receiverId: userId },
                 ]
             },
             include: {
                 sender: {
-                    select: { fullName: true, role: true }
+                    select: { id: true, fullName: true, role: true }
                 },
                 replies: {
                     include: {
-                        sender: { select: { fullName: true, role: true } }
+                        sender: { select: { id: true, fullName: true, role: true } }
                     },
                     orderBy: { createdAt: 'asc' }
                 }
             },
             orderBy: { createdAt: 'desc' },
         });
+        return messages;
     }
     async sendMessage(userId, content) {
+        console.log(`[SUPPORT-DEBUG] sendMessage called with userId: ${userId}, content: ${content.substring(0, 50)}`);
         const user = await this.prisma.user.findUnique({
             where: { id: userId },
-            select: { fullName: true, role: true },
+            select: { fullName: true, role: true, id: true },
         });
         if (!user) {
+            console.error(`[SUPPORT-DEBUG] User not found: ${userId}`);
             throw new common_1.NotFoundException('User not found');
         }
-        console.log(`Support: User ${userId} (${user.fullName}) sending message`);
+        console.log(`[SUPPORT-DEBUG] User found: ${user.id} (${user.fullName}, role: ${user.role})`);
         const message = await this.prisma.supportMessage.create({
             data: {
                 content,
@@ -55,10 +59,10 @@ let SupportService = class SupportService {
                 subject: `Support request from ${user.fullName}`,
             },
             include: {
-                sender: { select: { fullName: true, role: true } }
+                sender: { select: { fullName: true, role: true, id: true } }
             }
         });
-        console.log(`Support: Message created with ID ${message.id}`);
+        console.log(`[SUPPORT-DEBUG] Message created with ID ${message.id}, sender: ${JSON.stringify(message.sender)}`);
         const adminUsers = await this.prisma.user.findMany({
             where: { role: 'ADMIN' },
             select: { id: true },

@@ -6,11 +6,13 @@ export declare class SupportController {
         sender: {
             fullName: string;
             role: import("@prisma/client").$Enums.UserRole;
+            id: string;
         };
         replies: ({
             sender: {
                 fullName: string;
                 role: import("@prisma/client").$Enums.UserRole;
+                id: string;
             };
         } & {
             subject: string | null;
@@ -38,6 +40,7 @@ export declare class SupportController {
         sender: {
             fullName: string;
             role: import("@prisma/client").$Enums.UserRole;
+            id: string;
         };
     } & {
         subject: string | null;

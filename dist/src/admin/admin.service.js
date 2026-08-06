@@ -369,20 +369,12 @@ let AdminService = class AdminService {
         const limit = query.limit || 20;
         const skip = (page - 1) * limit;
         const allMessages = await this.prisma.supportMessage.count();
-        console.log(`Total support messages in DB: ${allMessages}`);
-        const where = {
-            parentId: null,
-            sender: {
-                role: { not: 'ADMIN' }
-            }
-        };
-        if (query.unreadOnly) {
-            where.isRead = false;
-        }
-        console.log('Admin getMessages query:', JSON.stringify(where, null, 2));
+        console.log(`[DEBUG] Total support messages in DB (NO FILTER): ${allMessages}`);
         const [messages, total] = await Promise.all([
             this.prisma.supportMessage.findMany({
-                where,
+                where: {
+                    parentId: null,
+                },
                 skip,
                 take: limit,
                 orderBy: { createdAt: 'desc' },
@@ -408,9 +400,12 @@ let AdminService = class AdminService {
                     },
                 },
             }),
-            this.prisma.supportMessage.count({ where }),
+            this.prisma.supportMessage.count({ where: { parentId: null } }),
         ]);
-        console.log(`Admin found ${total} messages, returning ${messages.length}`);
+        console.log(`[DEBUG] Query returned total: ${total}, showing page ${page} with ${messages.length} messages`);
+        if (messages.length > 0) {
+            console.log(`[DEBUG] First message sender:`, JSON.stringify(messages[0].sender, null, 2));
+        }
         return {
             messages,
             pagination: {
