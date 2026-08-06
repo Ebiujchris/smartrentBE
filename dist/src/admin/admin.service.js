@@ -18,7 +18,7 @@ let AdminService = class AdminService {
         this.prisma = prisma;
     }
     async getDashboardStats() {
-        const [totalUsers, totalLandlords, totalTenants, totalProperties, totalUnits, occupiedUnits, totalSubscriptions, activeSubscriptions, trialSubscriptions, expiredSubscriptions, totalPayments, totalRevenue, recentUsers, recentPayments, unreadMessages,] = await Promise.all([
+        const [totalUsers, totalLandlords, totalTenants, totalProperties, totalUnits, occupiedUnits, totalSubscriptions, activeSubscriptions, trialSubscriptions, expiredSubscriptions, subscriptionRevenue, recentUsers, unreadMessages,] = await Promise.all([
             this.prisma.user.count(),
             this.prisma.user.count({ where: { role: 'LANDLORD' } }),
             this.prisma.user.count({ where: { role: 'TENANT' } }),
@@ -29,23 +29,16 @@ let AdminService = class AdminService {
             this.prisma.subscription.count({ where: { status: 'ACTIVE' } }),
             this.prisma.subscription.count({ where: { status: 'TRIAL' } }),
             this.prisma.subscription.count({ where: { status: 'EXPIRED' } }),
-            this.prisma.payment.count(),
-            this.prisma.payment.aggregate({
+            this.prisma.subscription.aggregate({
                 _sum: { amount: true },
-                where: { status: 'PAID' },
+                where: {
+                    status: { in: ['ACTIVE', 'TRIAL'] },
+                },
             }),
             this.prisma.user.findMany({
                 take: 10,
                 orderBy: { createdAt: 'desc' },
                 select: { id: true, fullName: true, email: true, role: true, createdAt: true, isSuspended: true },
-            }),
-            this.prisma.payment.findMany({
-                take: 10,
-                orderBy: { createdAt: 'desc' },
-                include: {
-                    tenant: { include: { user: { select: { fullName: true } } } },
-                    lease: { include: { unit: { include: { property: { select: { name: true } } } } } },
-                },
             }),
             this.prisma.supportMessage.count({
                 where: {
@@ -73,13 +66,11 @@ let AdminService = class AdminService {
                 trial: trialSubscriptions,
                 expired: expiredSubscriptions,
             },
-            payments: {
-                total: totalPayments,
-                totalRevenue: totalRevenue._sum.amount || 0,
+            revenue: {
+                subscription: subscriptionRevenue._sum?.amount || 0,
             },
             unreadMessages,
             recentUsers,
-            recentPayments,
         };
     }
     async getUserGrowthData() {

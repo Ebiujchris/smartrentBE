@@ -24,9 +24,8 @@ export declare class AdminController {
             trial: number;
             expired: number;
         };
-        payments: {
-            total: number;
-            totalRevenue: number | import("@prisma/client-runtime-utils").Decimal;
+        revenue: {
+            subscription: number | import("@prisma/client-runtime-utils").Decimal;
         };
         unreadMessages: number;
         recentUsers: {
@@ -37,64 +36,6 @@ export declare class AdminController {
             isSuspended: boolean;
             createdAt: Date;
         }[];
-        recentPayments: ({
-            tenant: {
-                user: {
-                    fullName: string;
-                };
-            } & {
-                id: string;
-                createdAt: Date;
-                updatedAt: Date;
-                userId: string;
-                nationalId: string | null;
-                emergencyContact: string | null;
-                occupation: string | null;
-            };
-            lease: {
-                unit: {
-                    property: {
-                        name: string;
-                    };
-                } & {
-                    id: string;
-                    createdAt: Date;
-                    updatedAt: Date;
-                    status: import("@prisma/client").$Enums.UnitStatus;
-                    unitNumber: string;
-                    floor: string | null;
-                    bedrooms: number | null;
-                    bathrooms: number | null;
-                    size: string | null;
-                    rentAmount: import("@prisma/client-runtime-utils").Decimal;
-                    propertyId: string;
-                };
-            } & {
-                id: string;
-                createdAt: Date;
-                updatedAt: Date;
-                rentAmount: import("@prisma/client-runtime-utils").Decimal;
-                isActive: boolean;
-                tenantId: string;
-                unitId: string;
-                startDate: Date;
-                endDate: Date;
-                deposit: import("@prisma/client-runtime-utils").Decimal;
-            };
-        } & {
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            status: import("@prisma/client").$Enums.PaymentStatus;
-            amount: import("@prisma/client-runtime-utils").Decimal;
-            tenantId: string;
-            dueDate: Date;
-            leaseId: string;
-            paidDate: Date | null;
-            method: import("@prisma/client").$Enums.PaymentMethod | null;
-            reference: string | null;
-            notes: string | null;
-        })[];
     }>;
     getUserGrowthData(): Promise<{
         landlords: number;

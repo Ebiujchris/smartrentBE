@@ -21,10 +21,8 @@ export class AdminService {
       activeSubscriptions,
       trialSubscriptions,
       expiredSubscriptions,
-      totalPayments,
-      totalRevenue,
+      subscriptionRevenue,
       recentUsers,
-      recentPayments,
       unreadMessages,
     ] = await Promise.all([
       this.prisma.user.count(),
@@ -37,30 +35,24 @@ export class AdminService {
       this.prisma.subscription.count({ where: { status: 'ACTIVE' } }),
       this.prisma.subscription.count({ where: { status: 'TRIAL' } }),
       this.prisma.subscription.count({ where: { status: 'EXPIRED' } }),
-      this.prisma.payment.count(),
-      this.prisma.payment.aggregate({
+      // Calculate total subscription revenue from active subscriptions
+      this.prisma.subscription.aggregate({
         _sum: { amount: true },
-        where: { status: 'PAID' },
+        where: { 
+          status: { in: ['ACTIVE', 'TRIAL'] }, // Count active and trial subscriptions
+        },
       }),
       this.prisma.user.findMany({
         take: 10,
         orderBy: { createdAt: 'desc' },
         select: { id: true, fullName: true, email: true, role: true, createdAt: true, isSuspended: true },
       }),
-      this.prisma.payment.findMany({
-        take: 10,
-        orderBy: { createdAt: 'desc' },
-        include: {
-          tenant: { include: { user: { select: { fullName: true } } } },
-          lease: { include: { unit: { include: { property: { select: { name: true } } } } } },
-        },
-      }),
       this.prisma.supportMessage.count({
         where: {
           receiver: { role: 'ADMIN' },
           isRead: false,
         },
-      }).catch(() => 0), // Graceful fallback if table doesn't exist yet
+      }).catch(() => 0),
     ]);
 
     return {
@@ -82,13 +74,11 @@ export class AdminService {
         trial: trialSubscriptions,
         expired: expiredSubscriptions,
       },
-      payments: {
-        total: totalPayments,
-        totalRevenue: totalRevenue._sum.amount || 0,
+      revenue: {
+        subscription: subscriptionRevenue._sum?.amount || 0,
       },
       unreadMessages,
       recentUsers,
-      recentPayments,
     };
   }
 
