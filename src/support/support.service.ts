@@ -30,16 +30,19 @@ export class SupportService {
   }
 
   async sendMessage(userId: string, content: string) {
+    console.log(`[SUPPORT-DEBUG] sendMessage called with userId: ${userId}, content: ${content.substring(0, 50)}`);
+    
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      select: { fullName: true, role: true },
+      select: { fullName: true, role: true, id: true },
     });
 
     if (!user) {
+      console.error(`[SUPPORT-DEBUG] User not found: ${userId}`);
       throw new NotFoundException('User not found');
     }
 
-    console.log(`Support: User ${userId} (${user.fullName}) sending message`);
+    console.log(`[SUPPORT-DEBUG] User found: ${user.id} (${user.fullName}, role: ${user.role})`);
 
     // Create the actual support message
     const message = await this.prisma.supportMessage.create({
@@ -49,11 +52,11 @@ export class SupportService {
         subject: `Support request from ${user.fullName}`,
       },
       include: {
-        sender: { select: { fullName: true, role: true } }
+        sender: { select: { fullName: true, role: true, id: true } }
       }
     });
 
-    console.log(`Support: Message created with ID ${message.id}`);
+    console.log(`[SUPPORT-DEBUG] Message created with ID ${message.id}, sender: ${JSON.stringify(message.sender)}`);
 
     // Optionally notify admins
     const adminUsers = await this.prisma.user.findMany({
