@@ -419,8 +419,11 @@ export class AdminService {
     const skip = (page - 1) * limit;
 
     const where: any = {
-      receiver: { role: 'ADMIN' },
       parentId: null, // Only top-level messages
+      // Show messages sent by non-admins (landlords/tenants) or explicitly to admin
+      sender: {
+        role: { not: 'ADMIN' }
+      }
     };
 
     if (query.unreadOnly) {
