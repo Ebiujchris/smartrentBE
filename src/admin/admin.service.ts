@@ -418,28 +418,16 @@ export class AdminService {
     const limit = query.limit || 20;
     const skip = (page - 1) * limit;
 
-    // First, let's check ALL messages in the database
+    // First, let's check ALL messages in the database - NO FILTER
     const allMessages = await this.prisma.supportMessage.count();
-    console.log(`Total support messages in DB: ${allMessages}`);
+    console.log(`[DEBUG] Total support messages in DB (NO FILTER): ${allMessages}`);
 
-    const where: any = {
-      parentId: null, // Only top-level messages
-      // Show messages sent by non-admins (landlords/tenants) or explicitly to admin
-      sender: {
-        role: { not: 'ADMIN' }
-      }
-    };
-
-    if (query.unreadOnly) {
-      where.isRead = false;
-    }
-
-    // Debug: log the query
-    console.log('Admin getMessages query:', JSON.stringify(where, null, 2));
-
+    // Try simple query first - just get ALL messages
     const [messages, total] = await Promise.all([
       this.prisma.supportMessage.findMany({
-        where,
+        where: {
+          parentId: null, // Only top-level
+        },
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
@@ -465,10 +453,13 @@ export class AdminService {
           },
         },
       }),
-      this.prisma.supportMessage.count({ where }),
+      this.prisma.supportMessage.count({ where: { parentId: null } }),
     ]);
 
-    console.log(`Admin found ${total} messages, returning ${messages.length}`);
+    console.log(`[DEBUG] Query returned total: ${total}, showing page ${page} with ${messages.length} messages`);
+    if (messages.length > 0) {
+      console.log(`[DEBUG] First message sender:`, JSON.stringify(messages[0].sender, null, 2));
+    }
 
     return {
       messages,
