@@ -418,6 +418,10 @@ export class AdminService {
     const limit = query.limit || 20;
     const skip = (page - 1) * limit;
 
+    // First, let's check ALL messages in the database
+    const allMessages = await this.prisma.supportMessage.count();
+    console.log(`Total support messages in DB: ${allMessages}`);
+
     const where: any = {
       parentId: null, // Only top-level messages
       // Show messages sent by non-admins (landlords/tenants) or explicitly to admin
@@ -429,6 +433,9 @@ export class AdminService {
     if (query.unreadOnly) {
       where.isRead = false;
     }
+
+    // Debug: log the query
+    console.log('Admin getMessages query:', JSON.stringify(where, null, 2));
 
     const [messages, total] = await Promise.all([
       this.prisma.supportMessage.findMany({
@@ -460,6 +467,8 @@ export class AdminService {
       }),
       this.prisma.supportMessage.count({ where }),
     ]);
+
+    console.log(`Admin found ${total} messages, returning ${messages.length}`);
 
     return {
       messages,

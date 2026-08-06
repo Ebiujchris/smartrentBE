@@ -39,6 +39,8 @@ export class SupportService {
       throw new NotFoundException('User not found');
     }
 
+    console.log(`Support: User ${userId} (${user.fullName}) sending message`);
+
     // Create the actual support message
     const message = await this.prisma.supportMessage.create({
       data: {
@@ -50,6 +52,8 @@ export class SupportService {
         sender: { select: { fullName: true, role: true } }
       }
     });
+
+    console.log(`Support: Message created with ID ${message.id}`);
 
     // Optionally notify admins
     const adminUsers = await this.prisma.user.findMany({

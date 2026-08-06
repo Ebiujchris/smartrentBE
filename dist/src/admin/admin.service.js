@@ -332,10 +332,10 @@ let AdminService = class AdminService {
             data.currentPeriodEnd = new Date(dto.currentPeriodEnd);
         if (dto.status === 'ACTIVE') {
             const now = new Date();
-            const oneYearFromNow = new Date();
-            oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
+            const oneMonthFromNow = new Date();
+            oneMonthFromNow.setMonth(oneMonthFromNow.getMonth() + 1);
             data.currentPeriodStart = now;
-            data.currentPeriodEnd = dto.currentPeriodEnd ? new Date(dto.currentPeriodEnd) : oneYearFromNow;
+            data.currentPeriodEnd = dto.currentPeriodEnd ? new Date(dto.currentPeriodEnd) : oneMonthFromNow;
             if (dto.plan || subscription.plan) {
                 const plan = dto.plan || subscription.plan;
                 switch (plan) {
@@ -368,13 +368,18 @@ let AdminService = class AdminService {
         const page = query.page || 1;
         const limit = query.limit || 20;
         const skip = (page - 1) * limit;
+        const allMessages = await this.prisma.supportMessage.count();
+        console.log(`Total support messages in DB: ${allMessages}`);
         const where = {
-            receiver: { role: 'ADMIN' },
             parentId: null,
+            sender: {
+                role: { not: 'ADMIN' }
+            }
         };
         if (query.unreadOnly) {
             where.isRead = false;
         }
+        console.log('Admin getMessages query:', JSON.stringify(where, null, 2));
         const [messages, total] = await Promise.all([
             this.prisma.supportMessage.findMany({
                 where,
@@ -405,6 +410,7 @@ let AdminService = class AdminService {
             }),
             this.prisma.supportMessage.count({ where }),
         ]);
+        console.log(`Admin found ${total} messages, returning ${messages.length}`);
         return {
             messages,
             pagination: {

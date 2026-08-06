@@ -47,6 +47,7 @@ let SupportService = class SupportService {
         if (!user) {
             throw new common_1.NotFoundException('User not found');
         }
+        console.log(`Support: User ${userId} (${user.fullName}) sending message`);
         const message = await this.prisma.supportMessage.create({
             data: {
                 content,
@@ -57,6 +58,7 @@ let SupportService = class SupportService {
                 sender: { select: { fullName: true, role: true } }
             }
         });
+        console.log(`Support: Message created with ID ${message.id}`);
         const adminUsers = await this.prisma.user.findMany({
             where: { role: 'ADMIN' },
             select: { id: true },
