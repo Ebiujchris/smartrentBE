@@ -182,9 +182,27 @@ export class PesapalService {
 
   private async registerIPN(token: string): Promise<string> {
     const backendUrl = this.configService.get<string>('BACKEND_URL');
+    if (!backendUrl) {
+      throw new Error('BACKEND_URL is not configured; Pesapal cannot register the IPN URL');
+    }
+
     const ipnUrl = `${backendUrl}/payments/pesapal/ipn`;
 
-    // Check if IPN is already registered (you can store this in DB or config)
+    const listResponse = await fetch(`${this.baseUrl}/URLSetup/GetIpnList`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+    const registeredIpns = await listResponse.json();
+    const existingIpn = Array.isArray(registeredIpns)
+      ? registeredIpns.find((ipn) => ipn.url === ipnUrl)
+      : registeredIpns.data?.find((ipn) => ipn.url === ipnUrl);
+
+    if (existingIpn?.ipn_id) {
+      return existingIpn.ipn_id;
+    }
+
     const response = await fetch(`${this.baseUrl}/URLSetup/RegisterIPN`, {
       method: 'POST',
       headers: {
@@ -199,11 +217,10 @@ export class PesapalService {
 
     const result = await response.json();
 
-    if (!response.ok && response.status !== 409) { // 409 means already registered
-      this.logger.warn(`IPN registration response: ${JSON.stringify(result)}`);
+    if (!response.ok || !(result.ipn_id || result.data?.ipn_id)) {
+      throw new Error(`Pesapal IPN registration failed: status=${response.status}, details=${JSON.stringify(result)}`);
     }
 
-    // Return the IPN ID (if new) or use existing one
     return result.ipn_id || result.data?.ipn_id || '';
   }
 
