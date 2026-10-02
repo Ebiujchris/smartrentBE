@@ -103,7 +103,6 @@ export class TenantsService {
               },
             },
             where: {
-              isActive: true,
               unit: {
                 property: {
                   ownerId: userId,
@@ -148,9 +147,6 @@ export class TenantsService {
                   property: true,
                 },
               },
-            },
-            where: {
-              isActive: true,
             },
           },
           payments: {

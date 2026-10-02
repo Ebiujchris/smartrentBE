@@ -356,56 +356,67 @@ let AdminService = class AdminService {
         });
     }
     async getMessages(query) {
-        const page = query.page || 1;
-        const limit = query.limit || 20;
-        const skip = (page - 1) * limit;
-        const allMessages = await this.prisma.supportMessage.count();
-        console.log(`[DEBUG] Total support messages in DB (NO FILTER): ${allMessages}`);
-        const [messages, total] = await Promise.all([
-            this.prisma.supportMessage.findMany({
-                where: {
-                    parentId: null,
-                },
-                skip,
-                take: limit,
-                orderBy: { createdAt: 'desc' },
-                include: {
-                    sender: {
-                        select: {
-                            id: true,
-                            fullName: true,
-                            email: true,
-                            role: true,
-                        },
+        try {
+            const page = query.page || 1;
+            const limit = query.limit || 20;
+            const skip = (page - 1) * limit;
+            console.log('[BACKEND] getMessages called with query:', JSON.stringify(query));
+            console.log('[BACKEND] page:', page, 'limit:', limit, 'skip:', skip);
+            const allMessages = await this.prisma.supportMessage.count();
+            console.log(`[BACKEND] Total support messages in DB: ${allMessages}`);
+            const [messages, total] = await Promise.all([
+                this.prisma.supportMessage.findMany({
+                    where: {
+                        parentId: null,
                     },
-                    replies: {
-                        orderBy: { createdAt: 'asc' },
-                        include: {
-                            sender: {
-                                select: { id: true, fullName: true, role: true },
+                    skip,
+                    take: limit,
+                    orderBy: { createdAt: 'desc' },
+                    include: {
+                        sender: {
+                            select: {
+                                id: true,
+                                fullName: true,
+                                email: true,
+                                role: true,
                             },
                         },
+                        replies: {
+                            orderBy: { createdAt: 'asc' },
+                            include: {
+                                sender: {
+                                    select: { id: true, fullName: true, role: true },
+                                },
+                            },
+                        },
+                        _count: {
+                            select: { replies: true },
+                        },
                     },
-                    _count: {
-                        select: { replies: true },
-                    },
+                }),
+                this.prisma.supportMessage.count({ where: { parentId: null } }),
+            ]);
+            console.log(`[BACKEND] Query returned - total: ${total}, messages on page: ${messages.length}`);
+            if (messages.length > 0) {
+                console.log(`[BACKEND] First message ID: ${messages[0].id}, sender: ${messages[0].sender?.fullName}`);
+            }
+            const response = {
+                messages,
+                pagination: {
+                    page,
+                    limit,
+                    total,
+                    totalPages: Math.ceil(total / limit),
                 },
-            }),
-            this.prisma.supportMessage.count({ where: { parentId: null } }),
-        ]);
-        console.log(`[DEBUG] Query returned total: ${total}, showing page ${page} with ${messages.length} messages`);
-        if (messages.length > 0) {
-            console.log(`[DEBUG] First message sender:`, JSON.stringify(messages[0].sender, null, 2));
+            };
+            console.log('[BACKEND] getMessages returning response with keys:', Object.keys(response));
+            console.log('[BACKEND] Response object is:', response);
+            return response;
         }
-        return {
-            messages,
-            pagination: {
-                page,
-                limit,
-                total,
-                totalPages: Math.ceil(total / limit),
-            },
-        };
+        catch (error) {
+            console.error('[BACKEND] Error in getMessages:', error);
+            throw error;
+        }
     }
     async markMessageAsRead(id) {
         const message = await this.prisma.supportMessage.findUnique({

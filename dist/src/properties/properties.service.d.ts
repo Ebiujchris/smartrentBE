@@ -190,6 +190,7 @@ export declare class PropertiesService {
                 method: import("@prisma/client").$Enums.PaymentMethod | null;
                 reference: string | null;
                 notes: string | null;
+                processedById: string | null;
             }[];
         } & {
             id: string;

@@ -419,6 +419,7 @@ export declare class AdminService {
             method: import("@prisma/client").$Enums.PaymentMethod | null;
             reference: string | null;
             notes: string | null;
+            processedById: string | null;
         })[];
         totalRevenue: number | import("@prisma/client-runtime-utils").Decimal;
         pagination: {

@@ -77,6 +77,7 @@ export declare class PaymentsService {
         method: import("@prisma/client").$Enums.PaymentMethod | null;
         reference: string | null;
         notes: string | null;
+        processedById: string | null;
     }>;
     findAll(userId: string): Promise<any>;
     findByTenantId(tenantId: string): Promise<({
@@ -152,6 +153,7 @@ export declare class PaymentsService {
         method: import("@prisma/client").$Enums.PaymentMethod | null;
         reference: string | null;
         notes: string | null;
+        processedById: string | null;
     })[]>;
     findOne(id: string): Promise<{
         tenant: {
@@ -226,6 +228,7 @@ export declare class PaymentsService {
         method: import("@prisma/client").$Enums.PaymentMethod | null;
         reference: string | null;
         notes: string | null;
+        processedById: string | null;
     }>;
     update(id: string, updatePaymentDto: UpdatePaymentDto): Promise<{
         tenant: {
@@ -300,6 +303,7 @@ export declare class PaymentsService {
         method: import("@prisma/client").$Enums.PaymentMethod | null;
         reference: string | null;
         notes: string | null;
+        processedById: string | null;
     }>;
     recordPayment(id: string, method: string, reference?: string, notes?: string): Promise<{
         amount: number;
@@ -372,6 +376,7 @@ export declare class PaymentsService {
         method: import("@prisma/client").$Enums.PaymentMethod | null;
         reference: string | null;
         notes: string | null;
+        processedById: string | null;
     }>;
     getOverduePayments(userId: string): Promise<({
         tenant: {
@@ -446,6 +451,7 @@ export declare class PaymentsService {
         method: import("@prisma/client").$Enums.PaymentMethod | null;
         reference: string | null;
         notes: string | null;
+        processedById: string | null;
     })[]>;
     remove(id: string): Promise<{
         message: string;
