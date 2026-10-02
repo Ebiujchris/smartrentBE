@@ -56,7 +56,7 @@ export class ReportsService {
   }
 
   async getFinancial(userId: string, startDate?: string, endDate?: string) {
-    const dateFilter = this.buildDateFilter(startDate, endDate);
+    const dateFilter = this.buildDateFilter(startDate, endDate, 'dueDate');
 
     const payments = await this.prisma.payment.findMany({
       where: {
