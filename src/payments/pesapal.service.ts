@@ -52,6 +52,9 @@ export class PesapalService {
         throw new Error('Pesapal not configured');
       }
 
+      const backendUrl = this.getBackendUrl();
+      const frontendUrl = this.getFrontendUrl();
+
       // Format phone number
       let formattedPhone = dto.phoneNumber.replace(/\s+/g, '');
       if (formattedPhone.startsWith('0')) {
@@ -66,12 +69,9 @@ export class PesapalService {
       const token = await this.getAuthToken();
 
       // Step 2: Register IPN URL (if not already registered)
-      const ipnId = await this.registerIPN(token);
+      const ipnId = await this.registerIPN(token, backendUrl);
 
       // Step 3: Submit order request
-      const backendUrl = this.configService.get<string>('BACKEND_URL');
-      const frontendUrl = this.configService.get<string>('FRONTEND_URL');
-      
       const orderPayload = {
         id: dto.reference,
         currency: 'UGX',
@@ -180,11 +180,24 @@ export class PesapalService {
     return result.token;
   }
 
-  private async registerIPN(token: string): Promise<string> {
-    const backendUrl = this.configService.get<string>('BACKEND_URL');
+  private async registerIPN(token: string, backendUrl: string): Promise<string> {
     const ipnUrl = `${backendUrl}/payments/pesapal/ipn`;
 
-    // Check if IPN is already registered (you can store this in DB or config)
+    const listResponse = await fetch(`${this.baseUrl}/URLSetup/GetIpnList`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+    const registeredIpns = await listResponse.json();
+    const existingIpn = Array.isArray(registeredIpns)
+      ? registeredIpns.find((ipn) => ipn.url === ipnUrl)
+      : registeredIpns.data?.find((ipn) => ipn.url === ipnUrl);
+
+    if (existingIpn?.ipn_id) {
+      return existingIpn.ipn_id;
+    }
+
     const response = await fetch(`${this.baseUrl}/URLSetup/RegisterIPN`, {
       method: 'POST',
       headers: {
@@ -199,12 +212,39 @@ export class PesapalService {
 
     const result = await response.json();
 
-    if (!response.ok && response.status !== 409) { // 409 means already registered
-      this.logger.warn(`IPN registration response: ${JSON.stringify(result)}`);
+    if (!response.ok || !(result.ipn_id || result.data?.ipn_id)) {
+      throw new Error(`Pesapal IPN registration failed: status=${response.status}, details=${JSON.stringify(result)}`);
     }
 
-    // Return the IPN ID (if new) or use existing one
     return result.ipn_id || result.data?.ipn_id || '';
+  }
+
+  private getBackendUrl(): string {
+    const backendUrl =
+      this.configService.get<string>('BACKEND_URL') ||
+      process.env.BACKEND_URL ||
+      process.env.VERCEL_PROJECT_PRODUCTION_URL ||
+      process.env.VERCEL_URL;
+
+    if (!backendUrl) {
+      throw new Error('Set BACKEND_URL to the public backend URL so Pesapal can register its IPN.');
+    }
+
+    return this.normalizeBaseUrl(backendUrl);
+  }
+
+  private getFrontendUrl(): string {
+    const frontendUrl =
+      this.configService.get<string>('FRONTEND_URL') ||
+      process.env.FRONTEND_URL ||
+      'https://smartrent-fe-blush.vercel.app';
+
+    return this.normalizeBaseUrl(frontendUrl);
+  }
+
+  private normalizeBaseUrl(url: string): string {
+    const trimmedUrl = url.trim().replace(/\/+$/, '');
+    return /^https?:\/\//i.test(trimmedUrl) ? trimmedUrl : `https://${trimmedUrl}`;
   }
 
   async verifyPayment(orderTrackingId: string): Promise<PaymentResponse> {
