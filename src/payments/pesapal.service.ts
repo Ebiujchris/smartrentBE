@@ -52,6 +52,9 @@ export class PesapalService {
         throw new Error('Pesapal not configured');
       }
 
+      const backendUrl = this.getBackendUrl();
+      const frontendUrl = this.getFrontendUrl();
+
       // Format phone number
       let formattedPhone = dto.phoneNumber.replace(/\s+/g, '');
       if (formattedPhone.startsWith('0')) {
@@ -66,12 +69,9 @@ export class PesapalService {
       const token = await this.getAuthToken();
 
       // Step 2: Register IPN URL (if not already registered)
-      const ipnId = await this.registerIPN(token);
+      const ipnId = await this.registerIPN(token, backendUrl);
 
       // Step 3: Submit order request
-      const backendUrl = this.configService.get<string>('BACKEND_URL');
-      const frontendUrl = this.configService.get<string>('FRONTEND_URL');
-      
       const orderPayload = {
         id: dto.reference,
         currency: 'UGX',
@@ -180,12 +180,7 @@ export class PesapalService {
     return result.token;
   }
 
-  private async registerIPN(token: string): Promise<string> {
-    const backendUrl = this.configService.get<string>('BACKEND_URL');
-    if (!backendUrl) {
-      throw new Error('BACKEND_URL is not configured; Pesapal cannot register the IPN URL');
-    }
-
+  private async registerIPN(token: string, backendUrl: string): Promise<string> {
     const ipnUrl = `${backendUrl}/payments/pesapal/ipn`;
 
     const listResponse = await fetch(`${this.baseUrl}/URLSetup/GetIpnList`, {
@@ -222,6 +217,34 @@ export class PesapalService {
     }
 
     return result.ipn_id || result.data?.ipn_id || '';
+  }
+
+  private getBackendUrl(): string {
+    const backendUrl =
+      this.configService.get<string>('BACKEND_URL') ||
+      process.env.BACKEND_URL ||
+      process.env.VERCEL_PROJECT_PRODUCTION_URL ||
+      process.env.VERCEL_URL;
+
+    if (!backendUrl) {
+      throw new Error('Set BACKEND_URL to the public backend URL so Pesapal can register its IPN.');
+    }
+
+    return this.normalizeBaseUrl(backendUrl);
+  }
+
+  private getFrontendUrl(): string {
+    const frontendUrl =
+      this.configService.get<string>('FRONTEND_URL') ||
+      process.env.FRONTEND_URL ||
+      'https://smartrent-fe-blush.vercel.app';
+
+    return this.normalizeBaseUrl(frontendUrl);
+  }
+
+  private normalizeBaseUrl(url: string): string {
+    const trimmedUrl = url.trim().replace(/\/+$/, '');
+    return /^https?:\/\//i.test(trimmedUrl) ? trimmedUrl : `https://${trimmedUrl}`;
   }
 
   async verifyPayment(orderTrackingId: string): Promise<PaymentResponse> {
