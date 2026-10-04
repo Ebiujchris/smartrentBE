@@ -15,7 +15,7 @@ export class LeasesController {
   @Post()
   @Roles('LANDLORD', 'PROPERTY_MANAGER', 'ADMIN')
   create(@CurrentUser() user: any, @Body() createLeaseDto: CreateLeaseDto) {
-    return this.leasesService.create(user.id, createLeaseDto);
+    return this.leasesService.create(user, createLeaseDto);
   }
 
   @Get()

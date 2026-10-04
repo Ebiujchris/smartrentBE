@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@n
 import { TenantsService } from './tenants.service';
 import { CreateTenantDto } from './dto/create-tenant.dto';
 import { UpdateTenantDto } from './dto/update-tenant.dto';
+import { RegisterTenantDto } from './dto/register-tenant.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -16,6 +17,12 @@ export class TenantsController {
   @Roles('LANDLORD', 'PROPERTY_MANAGER', 'ADMIN')
   create(@CurrentUser() user: any, @Body() createTenantDto: CreateTenantDto) {
     return this.tenantsService.create(user.id, createTenantDto);
+  }
+
+  @Post('register')
+  @Roles('LANDLORD', 'PROPERTY_MANAGER', 'ADMIN')
+  register(@CurrentUser() user: any, @Body() dto: RegisterTenantDto) {
+    return this.tenantsService.register(user, dto);
   }
 
   @Get()
@@ -39,19 +46,14 @@ export class TenantsController {
 
   @Patch(':id')
   @Roles('LANDLORD', 'PROPERTY_MANAGER', 'ADMIN')
-  update(@Param('id') id: string, @Body() updateTenantDto: UpdateTenantDto) {
-    return this.tenantsService.update(id, updateTenantDto);
+  update(@Param('id') id: string, @Body() updateTenantDto: UpdateTenantDto, @CurrentUser() user: any) {
+    return this.tenantsService.update(id, updateTenantDto, user);
   }
 
   @Delete(':id')
   @Roles('LANDLORD', 'PROPERTY_MANAGER', 'ADMIN')
-  remove(@Param('id') id: string) {
-    return this.tenantsService.remove(id);
+  remove(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.tenantsService.remove(id, user);
   }
 
-  @Delete('user/:userId')
-  @Roles('LANDLORD', 'PROPERTY_MANAGER', 'ADMIN')
-  removeByUserId(@Param('userId') userId: string) {
-    return this.tenantsService.removeByUserId(userId);
-  }
 }

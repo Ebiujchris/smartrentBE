@@ -12,15 +12,20 @@ import { UpdateLeaseDto } from './dto/update-lease.dto';
 export class LeasesService {
   constructor(private prisma: PrismaService) {}
 
-  async create(userId: string, createLeaseDto: CreateLeaseDto) {
+  async create(user: { id: string; role: string }, createLeaseDto: CreateLeaseDto) {
     const { tenantId, unitId, startDate, endDate, rentAmount, deposit } =
       createLeaseDto;
 
     console.log('Creating lease with dates:', { startDate, endDate, type: typeof startDate });
 
     // Check if unit exists and is vacant
-    const unit = await this.prisma.unit.findUnique({
-      where: { id: unitId },
+    const unit = await this.prisma.unit.findFirst({
+      where: {
+        id: unitId,
+        ...(user.role === 'ADMIN'
+          ? {}
+          : { property: { ownerId: user.id } }),
+      },
     });
 
     if (!unit) {

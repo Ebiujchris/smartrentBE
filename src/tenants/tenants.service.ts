@@ -5,11 +5,24 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateTenantDto } from './dto/create-tenant.dto';
+import { RegisterTenantDto } from './dto/register-tenant.dto';
 import { UpdateTenantDto } from './dto/update-tenant.dto';
 
 @Injectable()
 export class TenantsService {
   constructor(private prisma: PrismaService) {}
+
+  private tenantAccessScope(user: { id: string; role: string }) {
+    if (user.role === 'ADMIN') return {};
+    if (user.role === 'TENANT') return { userId: user.id };
+    return {
+      leases: {
+        some: {
+          unit: { property: { ownerId: user.id } },
+        },
+      },
+    };
+  }
 
   async create(userId: string, createTenantDto: CreateTenantDto) {
     const {
@@ -56,6 +69,83 @@ export class TenantsService {
     });
 
     return user;
+  }
+
+  async register(user: { id: string; role: string }, dto: RegisterTenantDto) {
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
+    if (existingUser) {
+      throw new ConflictException('A user with this email already exists');
+    }
+
+    const startDate = new Date(dto.startDate);
+    const endDate = new Date(dto.endDate);
+    if (endDate < startDate) {
+      throw new ConflictException('Tenancy end date must be on or after its start date');
+    }
+
+    const bcrypt = require('bcryptjs');
+    const hashedPassword = await bcrypt.hash(dto.password, 10);
+
+    return this.prisma.$transaction(async (tx) => {
+      const unit = await tx.unit.findFirst({
+        where: {
+          id: dto.unitId,
+          ...(user.role === 'ADMIN'
+            ? {}
+            : { property: { ownerId: user.id } }),
+        },
+      });
+
+      if (!unit) {
+        throw new NotFoundException('Unit not found');
+      }
+      if (unit.status === 'OCCUPIED') {
+        throw new ConflictException('Unit is already occupied');
+      }
+
+      const tenantUser = await tx.user.create({
+        data: {
+          email: dto.email,
+          password: hashedPassword,
+          fullName: dto.fullName,
+          phone: dto.phone,
+          role: 'TENANT',
+          tenantProfile: {
+            create: {
+              nationalId: dto.nationalId,
+              emergencyContact: dto.emergencyContact,
+              occupation: dto.occupation,
+            },
+          },
+        },
+        include: { tenantProfile: true },
+      });
+
+      const lease = await tx.lease.create({
+        data: {
+          tenantId: tenantUser.tenantProfile!.id,
+          unitId: unit.id,
+          startDate,
+          endDate,
+          rentAmount: dto.rentAmount,
+          deposit: dto.deposit,
+          isActive: true,
+        },
+        include: {
+          tenant: { include: { user: true } },
+          unit: { include: { property: true } },
+        },
+      });
+
+      await tx.unit.update({
+        where: { id: unit.id },
+        data: { status: 'OCCUPIED' },
+      });
+
+      return { tenant: tenantUser, lease, success: true };
+    });
   }
 
   async findAll(userId: string) {
@@ -168,20 +258,13 @@ export class TenantsService {
     return tenants;
   }
 
-  async findOne(id: string, user?: any) {
-    // If user is TENANT, verify they can only access their own tenant record
-    if (user && user.role === 'TENANT') {
-      const tenantRecord = await this.prisma.tenant.findUnique({
-        where: { id },
-        select: { userId: true },
-      });
-      if (!tenantRecord || tenantRecord.userId !== user.id) {
-        throw new NotFoundException('Tenant record not found or access denied');
-      }
-    }
+  async findOne(id: string, user: { id: string; role: string }) {
+    const ownerLeaseFilter = ['LANDLORD', 'PROPERTY_MANAGER'].includes(user.role)
+      ? { unit: { property: { ownerId: user.id } } }
+      : undefined;
 
-    const tenant = await this.prisma.tenant.findUnique({
-      where: { id },
+    const tenant = await this.prisma.tenant.findFirst({
+      where: { id, ...this.tenantAccessScope(user) },
       include: {
         user: {
           select: {
@@ -193,6 +276,7 @@ export class TenantsService {
           },
         },
         leases: {
+          where: ownerLeaseFilter,
           include: {
             unit: {
               include: {
@@ -203,11 +287,13 @@ export class TenantsService {
           },
         },
         payments: {
+          where: ownerLeaseFilter ? { lease: ownerLeaseFilter } : undefined,
           orderBy: {
             dueDate: 'desc',
           },
         },
         maintenanceRequests: {
+          where: ownerLeaseFilter ? { unit: ownerLeaseFilter.unit } : undefined,
           orderBy: {
             reportedAt: 'desc',
           },
@@ -222,9 +308,13 @@ export class TenantsService {
     return tenant;
   }
 
-  async update(id: string, updateTenantDto: UpdateTenantDto) {
-    const tenant = await this.prisma.tenant.findUnique({
-      where: { id },
+  async update(
+    id: string,
+    updateTenantDto: UpdateTenantDto,
+    user: { id: string; role: string },
+  ) {
+    const tenant = await this.prisma.tenant.findFirst({
+      where: { id, ...this.tenantAccessScope(user) },
     });
 
     if (!tenant) {
@@ -255,13 +345,34 @@ export class TenantsService {
     return updated;
   }
 
-  async remove(id: string) {
-    const tenant = await this.prisma.tenant.findUnique({
-      where: { id },
+  async remove(id: string, user: { id: string; role: string }) {
+    const tenant = await this.prisma.tenant.findFirst({
+      where: { id, ...this.tenantAccessScope(user) },
+      include: {
+        _count: {
+          select: {
+            leases: true,
+            payments: true,
+            maintenanceRequests: true,
+            contracts: true,
+          },
+        },
+      },
     });
 
     if (!tenant) {
       throw new NotFoundException('Tenant not found');
+    }
+
+    if (
+      tenant._count.leases > 0 ||
+      tenant._count.payments > 0 ||
+      tenant._count.maintenanceRequests > 0 ||
+      tenant._count.contracts > 0
+    ) {
+      throw new ConflictException(
+        'Tenant has tenancy, payment, maintenance, or agreement history. End the tenancy instead of deleting this record.',
+      );
     }
 
     await this.prisma.tenant.delete({
@@ -269,19 +380,6 @@ export class TenantsService {
     });
 
     return { message: 'Tenant deleted successfully' };
-  }
-
-  /**
-   * Rollback: delete user by user ID (cascade removes tenant profile via Prisma schema).
-   * Called when lease creation fails after tenant was already created.
-   */
-  async removeByUserId(userId: string) {
-    const user = await this.prisma.user.findUnique({ where: { id: userId } });
-    if (!user) {
-      return { message: 'User not found, nothing to rollback' };
-    }
-    await this.prisma.user.delete({ where: { id: userId } });
-    return { message: 'Rollback successful — user and tenant profile removed' };
   }
 
   async getCurrentTenant(userId: string) {

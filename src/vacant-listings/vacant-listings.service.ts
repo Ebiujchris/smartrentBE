@@ -36,6 +36,10 @@ export class VacantListingsService {
       where: { id: createDto.unitId },
       include: {
         property: true,
+        leases: {
+          where: { isActive: true },
+          select: { id: true },
+        },
       },
     });
 
@@ -45,6 +49,10 @@ export class VacantListingsService {
 
     if (unit.property.ownerId !== userId) {
       throw new ForbiddenException('You do not own this unit');
+    }
+
+    if (unit.status !== 'VACANT' || unit.leases.length > 0) {
+      throw new BadRequestException('Only vacant units without an active tenancy can be advertised');
     }
 
     // Check if a listing already exists for this unit
@@ -197,6 +205,40 @@ export class VacantListingsService {
     });
 
     return listings;
+  }
+
+  async findAvailableUnits(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { subscription: true },
+    });
+
+    if (!user?.subscription) {
+      throw new ForbiddenException('No active subscription found');
+    }
+    if (user.subscription.plan === 'STARTER') {
+      throw new ForbiddenException(
+        'Vacancy advertising is only available on Professional and Premium plans.',
+      );
+    }
+
+    return this.prisma.unit.findMany({
+      where: {
+        status: 'VACANT',
+        property: { ownerId: userId },
+        leases: { none: { isActive: true } },
+        vacantListing: { is: null },
+      },
+      include: {
+        property: {
+          select: { id: true, name: true, address: true },
+        },
+      },
+      orderBy: [
+        { property: { name: 'asc' } },
+        { unitNumber: 'asc' },
+      ],
+    });
   }
 
   async findOne(id: string) {

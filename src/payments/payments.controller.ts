@@ -28,6 +28,7 @@ export class PaymentsController {
   ) {}
 
   @Get('debug-env')
+  @Roles('ADMIN')
   getDebugEnv() {
     return {
       env: this.configService.get<string>('PESAPAL_ENVIRONMENT'),
@@ -40,7 +41,7 @@ export class PaymentsController {
   @Post()
   @Roles('LANDLORD', 'PROPERTY_MANAGER', 'ADMIN')
   create(@CurrentUser() user: any, @Body() createPaymentDto: CreatePaymentDto) {
-    return this.paymentsService.create(user.id, createPaymentDto);
+    return this.paymentsService.create(user, createPaymentDto);
   }
 
   @Get()
@@ -57,20 +58,20 @@ export class PaymentsController {
 
   @Get('tenant/:tenantId')
   @Roles('LANDLORD', 'PROPERTY_MANAGER', 'ADMIN')
-  findByTenant(@Param('tenantId') tenantId: string) {
-    return this.paymentsService.findByTenantId(tenantId);
+  findByTenant(@Param('tenantId') tenantId: string, @CurrentUser() user: any) {
+    return this.paymentsService.findByTenantId(tenantId, user);
   }
 
   @Get(':id')
   @Roles('LANDLORD', 'PROPERTY_MANAGER', 'ADMIN', 'TENANT')
-  findOne(@Param('id') id: string) {
-    return this.paymentsService.findOne(id);
+  findOne(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.paymentsService.findOne(id, user);
   }
 
   @Patch(':id')
   @Roles('LANDLORD', 'PROPERTY_MANAGER', 'ADMIN')
-  update(@Param('id') id: string, @Body() updatePaymentDto: UpdatePaymentDto) {
-    return this.paymentsService.update(id, updatePaymentDto);
+  update(@Param('id') id: string, @Body() updatePaymentDto: UpdatePaymentDto, @CurrentUser() user: any) {
+    return this.paymentsService.update(id, updatePaymentDto, user);
   }
 
   @Post('fix-dates')
@@ -103,9 +104,11 @@ export class PaymentsController {
   recordPayment(
     @Param('id') id: string,
     @Body() body: { method: string; reference?: string; notes?: string },
+    @CurrentUser() user: any,
   ) {
     return this.paymentsService.recordPayment(
       id,
+      user,
       body.method,
       body.reference,
       body.notes,
@@ -114,7 +117,7 @@ export class PaymentsController {
 
   @Delete(':id')
   @Roles('LANDLORD', 'PROPERTY_MANAGER', 'ADMIN')
-  remove(@Param('id') id: string) {
-    return this.paymentsService.remove(id);
+  remove(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.paymentsService.remove(id, user);
   }
 }

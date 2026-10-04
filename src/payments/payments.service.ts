@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
@@ -7,9 +8,30 @@ import { UpdatePaymentDto } from './dto/update-payment.dto';
 export class PaymentsService {
   constructor(private prisma: PrismaService) {}
 
-  async create(userId: string, createPaymentDto: CreatePaymentDto) {
+  private paymentOwnerScope(user: { id: string; role: string }): Prisma.PaymentWhereInput {
+    if (user.role === 'ADMIN') return {};
+    if (user.role === 'TENANT') return { tenant: { userId: user.id } };
+    return { lease: { unit: { property: { ownerId: user.id } } } };
+  }
+
+  async create(user: { id: string; role: string }, createPaymentDto: CreatePaymentDto) {
     const { leaseId, tenantId, amount, dueDate, method, reference, notes } =
       createPaymentDto;
+
+    const lease = await this.prisma.lease.findFirst({
+      where: {
+        id: leaseId,
+        tenantId,
+        ...(user.role === 'ADMIN'
+          ? {}
+          : { unit: { property: { ownerId: user.id } } }),
+      },
+      select: { id: true },
+    });
+
+    if (!lease) {
+      throw new NotFoundException('Lease not found');
+    }
 
     const payment = await this.prisma.payment.create({
       data: {
@@ -154,9 +176,9 @@ export class PaymentsService {
     }));
   }
 
-  async findByTenantId(tenantId: string) {
+  async findByTenantId(tenantId: string, user: { id: string; role: string }) {
     const payments = await this.prisma.payment.findMany({
-      where: { tenantId },
+      where: { tenantId, ...this.paymentOwnerScope(user) },
       include: {
         lease: {
           include: {
@@ -181,9 +203,9 @@ export class PaymentsService {
     return payments;
   }
 
-  async findOne(id: string) {
-    const payment = await this.prisma.payment.findUnique({
-      where: { id },
+  async findOne(id: string, user: { id: string; role: string }) {
+    const payment = await this.prisma.payment.findFirst({
+      where: { id, ...this.paymentOwnerScope(user) },
       include: {
         lease: {
           include: {
@@ -209,9 +231,9 @@ export class PaymentsService {
     return payment;
   }
 
-  async update(id: string, updatePaymentDto: UpdatePaymentDto) {
-    const payment = await this.prisma.payment.findUnique({
-      where: { id },
+  async update(id: string, updatePaymentDto: UpdatePaymentDto, user: { id: string; role: string }) {
+    const payment = await this.prisma.payment.findFirst({
+      where: { id, ...this.paymentOwnerScope(user) },
     });
 
     if (!payment) {
@@ -256,12 +278,13 @@ export class PaymentsService {
 
   async recordPayment(
     id: string,
+    user: { id: string; role: string },
     method: string,
     reference?: string,
     notes?: string,
   ) {
-    const payment = await this.prisma.payment.findUnique({
-      where: { id },
+    const payment = await this.prisma.payment.findFirst({
+      where: { id, ...this.paymentOwnerScope(user) },
     });
 
     if (!payment) {
@@ -375,9 +398,9 @@ export class PaymentsService {
     return overduePayments;
   }
 
-  async remove(id: string) {
-    const payment = await this.prisma.payment.findUnique({
-      where: { id },
+  async remove(id: string, user: { id: string; role: string }) {
+    const payment = await this.prisma.payment.findFirst({
+      where: { id, ...this.paymentOwnerScope(user) },
     });
 
     if (!payment) {

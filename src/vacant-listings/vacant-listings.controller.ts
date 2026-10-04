@@ -59,6 +59,13 @@ export class VacantListingsController {
     return this.vacantListingsService.findMyListings(user.id);
   }
 
+  @Get('available-units')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.LANDLORD, UserRole.PROPERTY_MANAGER, UserRole.ADMIN)
+  findAvailableUnits(@CurrentUser() user: any) {
+    return this.vacantListingsService.findAvailableUnits(user.id);
+  }
+
   // GET ONE - Public
   @Get(':id')
   findOne(@Param('id') id: string) {
