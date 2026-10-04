@@ -103,12 +103,14 @@ export class TenantsService {
               },
             },
             where: {
-              isActive: true,
               unit: {
                 property: {
                   ownerId: userId,
                 },
               },
+            },
+            orderBy: {
+              startDate: 'desc',
             },
           },
           payments: {
