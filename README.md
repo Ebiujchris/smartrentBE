@@ -61,11 +61,17 @@ $ npm run test:cov
 
 ### Rent ledger deployment
 
-Apply the rent-ledger database migration before deploying the updated API:
+For an existing database that has no Prisma migration history, the current schema
+has been captured as a baseline. Verify the database matches that baseline, then
+mark the baseline as applied before deploying the rent-ledger migration:
 
 ```bash
+npx prisma migrate resolve --applied 20261110140000_baseline
 npx prisma migrate deploy
 ```
+
+For a new, empty database, run `npx prisma migrate deploy` without resolving the
+baseline first.
 
 The Vercel daily rent-reminder cron requires a `CRON_SECRET` environment variable. Configure it in the Vercel project settings; the endpoint returns an error if it is missing.
 
