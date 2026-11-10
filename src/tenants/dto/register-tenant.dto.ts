@@ -3,11 +3,15 @@ import {
   IsEmail,
   IsNotEmpty,
   IsNumber,
+  IsInt,
   IsOptional,
   IsString,
   Min,
+  Max,
   MinLength,
+  IsEnum,
 } from 'class-validator';
+import { PaymentMethod } from '@prisma/client';
 
 export class RegisterTenantDto {
   @IsEmail()
@@ -54,4 +58,30 @@ export class RegisterTenantDto {
   @IsNumber()
   @Min(0)
   deposit: number;
+
+  @IsNumber()
+  @IsInt()
+  @Min(1)
+  @Max(120)
+  upfrontMonths: number;
+
+  @IsNumber()
+  @Min(0.01)
+  initialRentAmount: number;
+
+  @IsEnum(PaymentMethod)
+  initialPaymentMethod: PaymentMethod;
+
+  @IsOptional()
+  @IsDateString()
+  initialPaidAt?: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  depositReceived?: number;
+
+  @IsOptional()
+  @IsEnum(PaymentMethod)
+  depositPaymentMethod?: PaymentMethod;
 }

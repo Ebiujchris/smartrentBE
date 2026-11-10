@@ -7,6 +7,8 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateLeaseDto } from './dto/create-lease.dto';
 import { UpdateLeaseDto } from './dto/update-lease.dto';
+import { PaymentMethod, Prisma, RentReceiptType } from '@prisma/client';
+import { createMonthlyRentCharges, createRentReceipt } from '../payments/rent-ledger';
 
 @Injectable()
 export class LeasesService {
@@ -48,6 +50,18 @@ export class LeasesService {
     // Convert dates
     const parsedStartDate = new Date(startDate);
     const parsedEndDate = new Date(endDate);
+    if (parsedEndDate < parsedStartDate) {
+      throw new BadRequestException('Lease end date must be on or after its start date');
+    }
+    const requiredInitialRent = new Prisma.Decimal(rentAmount).mul(createLeaseDto.upfrontMonths);
+    if (new Prisma.Decimal(createLeaseDto.initialRentAmount).lt(requiredInitialRent)) {
+      throw new BadRequestException(
+        `Initial rent must cover at least ${createLeaseDto.upfrontMonths} months`,
+      );
+    }
+    if (new Prisma.Decimal(createLeaseDto.depositReceived ?? 0).gt(deposit)) {
+      throw new BadRequestException('Deposit received cannot exceed the agreed security deposit');
+    }
 
     console.log('Parsed dates:', { 
       parsedStartDate, 
@@ -66,6 +80,7 @@ export class LeasesService {
           endDate: parsedEndDate,
           rentAmount,
           deposit,
+          upfrontMonths: createLeaseDto.upfrontMonths,
           isActive: true,
         },
         include: {
@@ -81,6 +96,35 @@ export class LeasesService {
           },
         },
       });
+
+      const periodCount = await createMonthlyRentCharges(tx, createdLease);
+      if (createLeaseDto.upfrontMonths > periodCount) {
+        throw new BadRequestException(
+          'Upfront months cannot exceed the number of rent periods in the tenancy',
+        );
+      }
+
+      await createRentReceipt(tx, {
+        leaseId: createdLease.id,
+        tenantId,
+        amount: createLeaseDto.initialRentAmount,
+        method: createLeaseDto.initialPaymentMethod,
+        paidAt: createLeaseDto.initialPaidAt
+          ? new Date(createLeaseDto.initialPaidAt)
+          : undefined,
+        notes: `Initial rent advance covering at least ${createLeaseDto.upfrontMonths} months`,
+      });
+
+      if (createLeaseDto.depositReceived && createLeaseDto.depositReceived > 0) {
+        await createRentReceipt(tx, {
+          leaseId: createdLease.id,
+          tenantId,
+          amount: createLeaseDto.depositReceived,
+          type: RentReceiptType.DEPOSIT,
+          method: createLeaseDto.depositPaymentMethod ?? createLeaseDto.initialPaymentMethod as PaymentMethod,
+          notes: 'Security deposit received',
+        });
+      }
 
       console.log('Lease created:', { 
         id: createdLease.id, 
@@ -134,6 +178,7 @@ export class LeasesService {
           },
         },
         payments: true,
+        rentReceipts: { orderBy: { paidAt: 'desc' } },
       },
       orderBy: {
         createdAt: 'desc',
@@ -162,6 +207,7 @@ export class LeasesService {
             dueDate: 'desc',
           },
         },
+        rentReceipts: { orderBy: { paidAt: 'desc' } },
       },
     });
 
@@ -196,32 +242,40 @@ export class LeasesService {
       throw new ForbiddenException('Access denied');
     }
 
-    const updated = await this.prisma.lease.update({
-      where: { id },
-      data: {
-        ...updateLeaseDto,
-        startDate: updateLeaseDto.startDate
-          ? new Date(updateLeaseDto.startDate)
-          : undefined,
-        endDate: updateLeaseDto.endDate
-          ? new Date(updateLeaseDto.endDate)
-          : undefined,
-      },
-      include: {
-        tenant: {
-          include: {
-            user: true,
-          },
+    return this.prisma.$transaction(async (tx) => {
+      const updated = await tx.lease.update({
+        where: { id },
+        data: {
+          ...updateLeaseDto,
+          startDate: updateLeaseDto.startDate
+            ? new Date(updateLeaseDto.startDate)
+            : undefined,
+          endDate: updateLeaseDto.endDate
+            ? new Date(updateLeaseDto.endDate)
+            : undefined,
         },
-        unit: {
-          include: {
-            property: true,
-          },
-        },
-      },
-    });
+      });
 
-    return updated;
+      if (updated.endDate > lease.endDate) {
+        await createMonthlyRentCharges(tx, updated);
+      }
+
+      return tx.lease.findUniqueOrThrow({
+        where: { id },
+        include: {
+          tenant: {
+            include: {
+              user: true,
+            },
+          },
+          unit: {
+            include: {
+              property: true,
+            },
+          },
+        },
+      });
+    });
   }
 
   async terminate(id: string, user: any) {

@@ -59,6 +59,16 @@ $ npm run test:cov
 
 ## Deployment
 
+### Rent ledger deployment
+
+Apply the rent-ledger database migration before deploying the updated API:
+
+```bash
+npx prisma migrate deploy
+```
+
+The Vercel daily rent-reminder cron requires a `CRON_SECRET` environment variable. Configure it in the Vercel project settings; the endpoint returns an error if it is missing.
+
 When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
 
 If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:

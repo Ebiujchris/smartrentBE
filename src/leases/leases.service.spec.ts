@@ -36,6 +36,9 @@ describe('LeasesService ownership', () => {
           endDate: '2027-09-30',
           rentAmount: 500000,
           deposit: 500000,
+          upfrontMonths: 3,
+          initialRentAmount: 1500000,
+          initialPaymentMethod: 'CASH',
         },
       ),
     ).rejects.toBeInstanceOf(NotFoundException);

@@ -80,6 +80,9 @@ describe('TenantsService ownership', () => {
           endDate: '2027-09-30',
           rentAmount: 500000,
           deposit: 500000,
+          upfrontMonths: 3,
+          initialRentAmount: 1500000,
+          initialPaymentMethod: 'CASH',
         },
       ),
     ).rejects.toBeInstanceOf(NotFoundException);
@@ -91,5 +94,33 @@ describe('TenantsService ownership', () => {
       },
     });
     expect(tx.user.create).not.toHaveBeenCalled();
+  });
+
+  it('requires the initial rent receipt to cover the configured advance', async () => {
+    prisma.user.findUnique.mockResolvedValue(null);
+    prisma.$transaction.mockImplementation((callback) =>
+      callback({ unit: { findFirst: jest.fn().mockResolvedValue(null) } }),
+    );
+
+    await expect(
+      service.register(
+        { id: 'landlord-a', role: 'LANDLORD' },
+        {
+          email: 'tenant@example.com',
+          password: 'password123',
+          fullName: 'Tenant Example',
+          unitId: 'unit-a',
+          startDate: '2026-10-01',
+          endDate: '2027-09-30',
+          rentAmount: 0.1,
+          deposit: 100,
+          upfrontMonths: 3,
+          initialRentAmount: 0.3,
+          initialPaymentMethod: 'CASH',
+        },
+      ),
+    ).rejects.toBeInstanceOf(NotFoundException);
+
+    expect(prisma.$transaction).toHaveBeenCalled();
   });
 });

@@ -12,5 +12,11 @@
       "dest": "api/index.ts",
       "methods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
     }
+  ],
+  "crons": [
+    {
+      "path": "/cron/rent-reminders",
+      "schedule": "0 6 * * *"
+    }
   ]
 }

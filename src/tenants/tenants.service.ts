@@ -7,6 +7,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateTenantDto } from './dto/create-tenant.dto';
 import { RegisterTenantDto } from './dto/register-tenant.dto';
 import { UpdateTenantDto } from './dto/update-tenant.dto';
+import { createMonthlyRentCharges, createRentReceipt } from '../payments/rent-ledger';
+import { Prisma, RentReceiptType } from '@prisma/client';
 
 @Injectable()
 export class TenantsService {
@@ -85,6 +87,16 @@ export class TenantsService {
       throw new ConflictException('Tenancy end date must be on or after its start date');
     }
 
+    const requiredInitialRent = new Prisma.Decimal(dto.rentAmount).mul(dto.upfrontMonths);
+    if (new Prisma.Decimal(dto.initialRentAmount).lt(requiredInitialRent)) {
+      throw new ConflictException(
+        `Initial rent must cover at least ${dto.upfrontMonths} months`,
+      );
+    }
+    if (new Prisma.Decimal(dto.depositReceived ?? 0).gt(dto.deposit)) {
+      throw new ConflictException('Deposit received cannot exceed the agreed security deposit');
+    }
+
     const bcrypt = require('bcryptjs');
     const hashedPassword = await bcrypt.hash(dto.password, 10);
 
@@ -131,6 +143,7 @@ export class TenantsService {
           endDate,
           rentAmount: dto.rentAmount,
           deposit: dto.deposit,
+          upfrontMonths: dto.upfrontMonths,
           isActive: true,
         },
         include: {
@@ -139,12 +152,40 @@ export class TenantsService {
         },
       });
 
+      const periodCount = await createMonthlyRentCharges(tx, lease);
+      if (dto.upfrontMonths > periodCount) {
+        throw new ConflictException(
+          'Upfront months cannot exceed the number of rent periods in the tenancy',
+        );
+      }
+
+      const rentReceipt = await createRentReceipt(tx, {
+        leaseId: lease.id,
+        tenantId: tenantUser.tenantProfile!.id,
+        amount: dto.initialRentAmount,
+        method: dto.initialPaymentMethod,
+        paidAt: dto.initialPaidAt ? new Date(dto.initialPaidAt) : undefined,
+        notes: `Initial rent advance covering at least ${dto.upfrontMonths} months`,
+      });
+
+      let depositReceipt;
+      if (dto.depositReceived && dto.depositReceived > 0) {
+        depositReceipt = await createRentReceipt(tx, {
+          leaseId: lease.id,
+          tenantId: tenantUser.tenantProfile!.id,
+          amount: dto.depositReceived,
+          type: RentReceiptType.DEPOSIT,
+          method: dto.depositPaymentMethod ?? dto.initialPaymentMethod,
+          notes: 'Security deposit received',
+        });
+      }
+
       await tx.unit.update({
         where: { id: unit.id },
         data: { status: 'OCCUPIED' },
       });
 
-      return { tenant: tenantUser, lease, success: true };
+      return { tenant: tenantUser, lease, rentReceipt, depositReceipt, success: true };
     });
   }
 
@@ -190,6 +231,9 @@ export class TenantsService {
                 include: {
                   property: true,
                 },
+              },
+              rentReceipts: {
+                orderBy: { paidAt: 'desc' },
               },
             },
             where: {
@@ -239,6 +283,9 @@ export class TenantsService {
                 include: {
                   property: true,
                 },
+              },
+              rentReceipts: {
+                orderBy: { paidAt: 'desc' },
               },
             },
             where: {

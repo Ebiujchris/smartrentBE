@@ -56,6 +56,21 @@ export class PaymentsController {
     return this.paymentsService.getOverduePayments(user.id);
   }
 
+  @Get('receipts')
+  @Roles('LANDLORD', 'PROPERTY_MANAGER', 'ADMIN', 'TENANT')
+  getRentReceipts(@CurrentUser() user: any) {
+    return this.paymentsService.getRentReceipts(user);
+  }
+
+  @Post('receipts')
+  @Roles('LANDLORD', 'PROPERTY_MANAGER', 'ADMIN')
+  recordRentReceipt(
+    @Body() dto: import('./dto/record-rent-receipt.dto').RecordRentReceiptDto,
+    @CurrentUser() user: any,
+  ) {
+    return this.paymentsService.recordRentReceipt(dto, user);
+  }
+
   @Get('tenant/:tenantId')
   @Roles('LANDLORD', 'PROPERTY_MANAGER', 'ADMIN')
   findByTenant(@Param('tenantId') tenantId: string, @CurrentUser() user: any) {
