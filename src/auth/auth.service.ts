@@ -71,13 +71,15 @@ export class AuthService {
   }
 
   async login(loginDto: LoginDto) {
+    const identifier = loginDto.email.trim();
+
     // Check if login identifier is email or phone number
-    const isEmail = loginDto.email.includes('@');
+    const isEmail = identifier.includes('@');
     
     let user;
     if (isEmail) {
       user = await this.prisma.user.findUnique({
-        where: { email: loginDto.email },
+        where: { email: identifier },
         include: {
           subscription: true,
           tenantProfile: true,
@@ -85,9 +87,12 @@ export class AuthService {
       });
     } else {
       // Login with phone number
-      const cleanedPhone = loginDto.email.replace(/\s+/g, '');
+      const cleanedPhone = identifier.replace(/\s+/g, '');
       user = await this.prisma.user.findFirst({
-        where: { phone: cleanedPhone },
+        where: {
+          phone: { in: [identifier, cleanedPhone] },
+          role: { in: ['LANDLORD', 'TENANT'] },
+        },
         include: {
           subscription: true,
           tenantProfile: true,
