@@ -32,8 +32,45 @@ async function createApp() {
     app.enableCors({
       origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
         if (!origin) return callback(null, true);
-        // Allow all vercel.app domains and localhost
-        if (origin.includes('.vercel.app') || origin.includes('localhost')) {
+
+        const allowedOrigins = [
+          'https://smartrent.tech',
+          'https://smartrent-fe-blush.vercel.app',
+          'https://admin-smartrent-kappa.vercel.app',
+          'http://localhost:3000',
+          'http://localhost:3001',
+          'http://localhost:3002',
+          'http://localhost:3003',
+          process.env.FRONTEND_URL,
+          process.env.ADMIN_FRONTEND_URL,
+        ]
+          .filter((allowedOrigin): allowedOrigin is string =>
+            Boolean(allowedOrigin),
+          )
+          .map((allowedOrigin) => {
+            try {
+              return new URL(allowedOrigin).origin;
+            } catch {
+              return null;
+            }
+          })
+          .filter((allowedOrigin): allowedOrigin is string =>
+            Boolean(allowedOrigin),
+          );
+
+        let requestOrigin: string;
+        try {
+          requestOrigin = new URL(origin).origin;
+        } catch {
+          return callback(null, false);
+        }
+
+        // Keep support for Vercel preview deployments.
+        if (
+          allowedOrigins.includes(requestOrigin) ||
+          new URL(origin).hostname.endsWith('.vercel.app') ||
+          new URL(origin).hostname === 'localhost'
+        ) {
           return callback(null, true);
         }
         callback(null, false);

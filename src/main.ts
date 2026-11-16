@@ -31,6 +31,7 @@ async function bootstrap() {
         'http://localhost:3001',
         'http://localhost:3002',
         'http://localhost:3003',
+        'https://smartrent.tech',
         'https://smartrent-fe-blush.vercel.app',
         'https://admin-smartrent-kappa.vercel.app',
         'https://smartrent-be.vercel.app',
