@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { SubscriptionPlan } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateSubscriptionDto } from './dto/update-subscription.dto';
 
@@ -36,30 +37,28 @@ export class SubscriptionsService {
       throw new NotFoundException('Subscription not found');
     }
 
-    // Determine max units and amount based on plan
-    let maxUnits = 7;
-    let amount = 75000;
+    const { plan, maxUnits, amount } = this.getPlanDetails(updateDto.plan);
 
-    switch (updateDto.plan) {
-      case 'STARTER':
-        maxUnits = 7;
-        amount = 75000;
-        break;
-      case 'PROFESSIONAL':
-        maxUnits = 30;
-        amount = 150000;
-        break;
-      case 'PREMIUM':
-        maxUnits = 9999; // Unlimited
-        amount = 300000;
-        break;
+    if (subscription.plan !== plan) {
+      if (
+        subscription.status === 'TRIAL' &&
+        (!subscription.trialEndsAt ||
+          subscription.trialEndsAt > new Date())
+      ) {
+        throw new BadRequestException(
+          'Your trial plan is locked until the free trial ends',
+        );
+      }
+      throw new BadRequestException(
+        'A verified payment is required to change your plan',
+      );
     }
 
     // Update subscription
     const updated = await this.prisma.subscription.update({
       where: { userId },
       data: {
-        plan: updateDto.plan as any,
+        plan,
         maxUnits,
         amount,
       },
@@ -75,6 +74,89 @@ export class SubscriptionsService {
     });
 
     return updated;
+  }
+
+  async assertTrialEnded(userId: string) {
+    const subscription = await this.prisma.subscription.findUnique({
+      where: { userId },
+      select: { status: true, trialEndsAt: true },
+    });
+
+    if (!subscription) {
+      throw new NotFoundException('Subscription not found');
+    }
+
+    if (
+      subscription.status === 'TRIAL' &&
+      (!subscription.trialEndsAt || subscription.trialEndsAt > new Date())
+    ) {
+      throw new BadRequestException(
+        'Your free trial plan cannot be changed until the trial ends',
+      );
+    }
+  }
+
+  async applyVerifiedPayment(
+    userId: string,
+    updateDto: UpdateSubscriptionDto,
+    transactionId: string,
+  ) {
+    const { plan, maxUnits, amount } = this.getPlanDetails(updateDto.plan);
+    const now = new Date();
+    const periodEnd = new Date(now);
+    periodEnd.setMonth(periodEnd.getMonth() + 1);
+
+    return this.prisma.$transaction(async (tx) => {
+      const claimed = await tx.pesapalTransaction.updateMany({
+        where: {
+          id: transactionId,
+          status: 'successful',
+          processedAt: null,
+        },
+        data: { processedAt: now },
+      });
+
+      if (claimed.count !== 1) return false;
+
+      await tx.subscription.update({
+        where: { userId },
+        data: {
+          plan,
+          maxUnits,
+          amount,
+          status: 'ACTIVE',
+          currentPeriodStart: now,
+          currentPeriodEnd: periodEnd,
+        },
+      });
+
+      return true;
+    });
+  }
+
+  getPlanDetails(plan: string) {
+    switch (plan) {
+      case 'STARTER':
+        return {
+          plan: SubscriptionPlan.STARTER,
+          maxUnits: 7,
+          amount: 75000,
+        };
+      case 'PROFESSIONAL':
+        return {
+          plan: SubscriptionPlan.PROFESSIONAL,
+          maxUnits: 30,
+          amount: 150000,
+        };
+      case 'PREMIUM':
+        return {
+          plan: SubscriptionPlan.PREMIUM,
+          maxUnits: 9999,
+          amount: 300000,
+        };
+      default:
+        throw new BadRequestException('Unsupported subscription plan');
+    }
   }
 
   async activateSubscription(userId: string) {

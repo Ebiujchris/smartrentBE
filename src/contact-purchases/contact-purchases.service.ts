@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -16,44 +17,75 @@ export class ContactPurchasesService {
     return !!purchase;
   }
 
-  // Create contact purchase (after payment verification)
-  async createPurchase(data: {
+  async createVerifiedPurchase(data: {
     listingId: string;
     buyerPhone: string;
     buyerEmail?: string;
     buyerName?: string;
-    paymentMethod: string;
-    transactionId: string;
+    orderTrackingId: string;
   }) {
-    // Verify listing exists
-    const listing = await this.prisma.vacantListing.findUnique({
-      where: { id: data.listingId },
+    const transaction = await this.prisma.pesapalTransaction.findFirst({
+      where: {
+        OR: [
+          { orderTrackingId: data.orderTrackingId },
+          { txRef: data.orderTrackingId },
+        ],
+      },
     });
 
+    if (
+      !transaction ||
+      transaction.status !== 'successful' ||
+      transaction.currency !== 'UGX' ||
+      !new Prisma.Decimal(transaction.amount).eq(10000)
+    ) {
+      throw new BadRequestException('A verified UGX 10,000 payment is required');
+    }
+
+    const metadata = transaction.metadata;
+    if (
+      !metadata ||
+      typeof metadata !== 'object' ||
+      Array.isArray(metadata) ||
+      metadata.type !== 'contact_purchase' ||
+      metadata.listingId !== data.listingId ||
+      normalizeUgandanPhone(transaction.phoneNumber) !==
+        normalizeUgandanPhone(data.buyerPhone)
+    ) {
+      throw new BadRequestException(
+        'Payment does not match this listing and buyer',
+      );
+    }
+
+    const listing = await this.prisma.vacantListing.findUnique({
+      where: { id: data.listingId },
+      select: { id: true },
+    });
     if (!listing) {
       throw new NotFoundException('Listing not found');
     }
 
-    // Check if already purchased
-    const existing = await this.hasPurchased(data.listingId, data.buyerPhone);
+    const existing = await this.prisma.contactPurchase.findFirst({
+      where: {
+        listingId: data.listingId,
+        buyerPhone: data.buyerPhone,
+      },
+    });
     if (existing) {
-      throw new BadRequestException('Contact already purchased for this listing');
+      return existing;
     }
 
-    // Create purchase record
-    const purchase = await this.prisma.contactPurchase.create({
+    return this.prisma.contactPurchase.create({
       data: {
         listingId: data.listingId,
         buyerPhone: data.buyerPhone,
         buyerEmail: data.buyerEmail,
         buyerName: data.buyerName,
-        paymentMethod: data.paymentMethod,
-        transactionId: data.transactionId,
+        paymentMethod: transaction.paymentMethod || 'PESAPAL',
+        transactionId: transaction.orderTrackingId || transaction.txRef,
         amountPaid: 10000,
       },
     });
-
-    return purchase;
   }
 
   // Get contact info (only if purchased)
@@ -106,4 +138,11 @@ export class ContactPurchasesService {
       },
     });
   }
+}
+
+function normalizeUgandanPhone(phone: string) {
+  const digits = phone.replace(/\D/g, '');
+  if (digits.startsWith('256')) return digits;
+  if (digits.startsWith('0')) return `256${digits.slice(1)}`;
+  return `256${digits}`;
 }

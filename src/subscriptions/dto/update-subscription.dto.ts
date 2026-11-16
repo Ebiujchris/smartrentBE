@@ -1,7 +1,8 @@
 import { IsEnum, IsNotEmpty } from 'class-validator';
+import { SubscriptionPlan } from '@prisma/client';
 
 export class UpdateSubscriptionDto {
-  @IsEnum(['STARTER', 'PROFESSIONAL', 'PREMIUM'])
+  @IsEnum(SubscriptionPlan)
   @IsNotEmpty()
-  plan: string;
+  plan: SubscriptionPlan;
 }

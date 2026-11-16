@@ -1,4 +1,4 @@
-import { NotFoundException } from '@nestjs/common';
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { PrismaService } from '../prisma/prisma.service';
 import { LeasesService } from './leases.service';
@@ -8,6 +8,7 @@ describe('LeasesService ownership', () => {
   const prisma = {
     unit: { findFirst: jest.fn() },
     tenant: { findUnique: jest.fn() },
+    lease: { findFirst: jest.fn() },
     $transaction: jest.fn(),
   };
 
@@ -50,5 +51,30 @@ describe('LeasesService ownership', () => {
       },
     });
     expect(prisma.$transaction).not.toHaveBeenCalled();
+  });
+
+  it('scopes a landlord lease lookup to their own properties', async () => {
+    prisma.lease.findFirst.mockResolvedValue(null);
+
+    await expect(
+      service.findOne('lease-b', { id: 'landlord-a', role: 'LANDLORD' }),
+    ).rejects.toBeInstanceOf(NotFoundException);
+
+    expect(prisma.lease.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          id: 'lease-b',
+          unit: { property: { ownerId: 'landlord-a' } },
+        },
+      }),
+    );
+  });
+
+  it('does not let unsupported roles bypass lease ownership checks', async () => {
+    await expect(
+      service.findOne('lease-a', { id: 'user-a', role: 'TENANT' }),
+    ).rejects.toBeInstanceOf(ForbiddenException);
+
+    expect(prisma.lease.findFirst).not.toHaveBeenCalled();
   });
 });

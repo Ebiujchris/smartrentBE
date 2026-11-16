@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -24,9 +24,9 @@ export class ReportsService {
       this.prisma.payment.aggregate({
         where: {
           lease: { unit: { property: { ownerId: userId } } },
-          status: 'PAID',
+          status: { not: 'CANCELLED' },
         },
-        _sum: { amount: true },
+        _sum: { paidAmount: true },
       }),
     ]);
 
@@ -48,7 +48,7 @@ export class ReportsService {
       totalProperties: properties,
       totalUnits: units,
       totalTenants: tenants,
-      totalRevenue: payments._sum.amount || 0,
+      totalRevenue: Number(payments._sum.paidAmount || 0),
       pendingMaintenance: maintenanceRequests,
       vacantUnits,
       occupancyRate: units > 0 ? ((units - vacantUnits) / units) * 100 : 0,
@@ -56,45 +56,65 @@ export class ReportsService {
   }
 
   async getFinancial(userId: string, startDate?: string, endDate?: string) {
-    const dateFilter = this.buildDateFilter(startDate, endDate);
+    const dateFilter = this.buildDateFilter(startDate, endDate, 'dueDate');
 
     const payments = await this.prisma.payment.findMany({
       where: {
         lease: { unit: { property: { ownerId: userId } } },
+        status: { not: 'CANCELLED' },
         ...dateFilter,
       },
       include: {
         tenant: { include: { user: true } },
         lease: { include: { unit: { include: { property: true } } } },
+        allocations: {
+          select: {
+            amount: true,
+            receipt: { select: { paidAt: true } },
+          },
+        },
       },
       orderBy: { dueDate: 'desc' },
     });
 
-    const totalPaid = payments
-      .filter((p) => p.status === 'PAID')
-      .reduce((sum, p) => sum + Number(p.amount), 0);
-
+    const totalPaid = payments.reduce(
+      (sum, payment) => sum + Number(payment.paidAmount),
+      0,
+    );
+    const outstanding = (payment: (typeof payments)[number]) =>
+      Math.max(0, Number(payment.amount) - Number(payment.paidAmount));
     const totalPending = payments
-      .filter((p) => p.status === 'PENDING')
-      .reduce((sum, p) => sum + Number(p.amount), 0);
-
+      .filter((payment) =>
+        ['PENDING', 'PARTIALLY_PAID'].includes(payment.status),
+      )
+      .reduce((sum, payment) => sum + outstanding(payment), 0);
     const totalOverdue = payments
-      .filter((p) => p.status === 'OVERDUE')
-      .reduce((sum, p) => sum + Number(p.amount), 0);
+      .filter((payment) => payment.status === 'OVERDUE')
+      .reduce((sum, payment) => sum + outstanding(payment), 0);
+    const totalExpected = payments.reduce(
+      (sum, payment) => sum + Number(payment.amount),
+      0,
+    );
 
     return {
       totalPaid,
       totalPending,
       totalOverdue,
-      totalExpected: totalPaid + totalPending + totalOverdue,
+      totalExpected,
       payments: payments.map((p) => ({
         id: p.id,
         tenant: p.tenant.user.fullName,
         property: p.lease.unit.property.name,
         unit: p.lease.unit.unitNumber,
         amount: Number(p.amount),
+        paidAmount: Number(p.paidAmount),
+        outstandingAmount: outstanding(p),
         dueDate: p.dueDate,
         paidDate: p.paidDate,
+        allocations: p.allocations.map((allocation) => ({
+          amount: Number(allocation.amount),
+          paidAt: allocation.receipt.paidAt,
+        })),
         status: p.status,
         method: p.method,
       })),
@@ -109,7 +129,7 @@ export class ReportsService {
           include: {
             leases: {
               where: { isActive: true },
-              include: { payments: true },
+              include: { payments: { where: { status: { not: 'CANCELLED' } } } },
             },
           },
         },
@@ -126,8 +146,7 @@ export class ReportsService {
       const totalRevenue = property.units.reduce((sum, unit) => {
         const unitRevenue = unit.leases.reduce((leaseSum, lease) => {
           const paidPayments = lease.payments
-            .filter((p) => p.status === 'PAID')
-            .reduce((pSum, p) => pSum + Number(p.amount), 0);
+            .reduce((pSum, p) => pSum + Number(p.paidAmount), 0);
           return leaseSum + paidPayments;
         }, 0);
         return sum + unitRevenue;
@@ -178,7 +197,7 @@ export class ReportsService {
           where: { isActive: true },
           include: {
             unit: { include: { property: true } },
-            payments: true,
+            payments: { where: { status: { not: 'CANCELLED' } } },
           },
         },
       },
@@ -187,11 +206,16 @@ export class ReportsService {
     return tenants.map((tenant) => {
       const activeLease = tenant.leases[0];
       const totalPaid = activeLease.payments
-        .filter((p) => p.status === 'PAID')
-        .reduce((sum, p) => sum + Number(p.amount), 0);
+        .reduce((sum, p) => sum + Number(p.paidAmount), 0);
       const totalDue = activeLease.payments
-        .filter((p) => p.status === 'PENDING' || p.status === 'OVERDUE')
-        .reduce((sum, p) => sum + Number(p.amount), 0);
+        .filter((p) =>
+          ['PENDING', 'PARTIALLY_PAID', 'OVERDUE'].includes(p.status),
+        )
+        .reduce(
+          (sum, p) =>
+            sum + Math.max(0, Number(p.amount) - Number(p.paidAmount)),
+          0,
+        );
 
       return {
         id: tenant.id,
@@ -283,15 +307,33 @@ export class ReportsService {
     }));
   }
 
-  private buildDateFilter(startDate?: string, endDate?: string, field = 'createdAt') {
-    const filter: any = {};
-    
-    if (startDate || endDate) {
-      filter[field] = {};
-      if (startDate) filter[field].gte = new Date(startDate);
-      if (endDate) filter[field].lte = new Date(endDate);
+  private buildDateFilter(
+    startDate?: string,
+    endDate?: string,
+    field = 'createdAt',
+  ): Record<string, { gte?: Date; lte?: Date }> {
+    if (!startDate && !endDate) return {};
+
+    const parseDate = (value: string, label: string) => {
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) {
+        throw new BadRequestException(`${label} must be a valid date`);
+      }
+      return date;
+    };
+
+    const range: { gte?: Date; lte?: Date } = {};
+    if (startDate) range.gte = parseDate(startDate, 'startDate');
+    if (endDate) {
+      range.lte = parseDate(endDate, 'endDate');
+      if (/^\d{4}-\d{2}-\d{2}$/.test(endDate)) {
+        range.lte.setUTCHours(23, 59, 59, 999);
+      }
     }
-    
-    return filter;
+    if (range.gte && range.lte && range.gte > range.lte) {
+      throw new BadRequestException('startDate cannot be after endDate');
+    }
+
+    return { [field]: range };
   }
 }

@@ -49,7 +49,7 @@ describe('PaymentsService ownership', () => {
         tenantId: 'tenant-b',
         unit: { property: { ownerId: 'landlord-a' } },
       },
-      select: { id: true },
+      select: { id: true, endDate: true },
     });
     expect(prisma.payment.create).not.toHaveBeenCalled();
   });

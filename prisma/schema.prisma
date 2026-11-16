@@ -513,6 +513,7 @@ model PesapalTransaction {
   createdAt     DateTime  @default(now())
   verifiedAt    DateTime?
   ipnReceivedAt DateTime?
+  processedAt   DateTime?
 
   @@index([txRef])
   @@index([orderTrackingId])

@@ -21,7 +21,7 @@ export class LeasesController {
   @Get()
   @Roles('LANDLORD', 'PROPERTY_MANAGER', 'ADMIN')
   findAll(@CurrentUser() user: any) {
-    return this.leasesService.findAll(user.id);
+    return this.leasesService.findAll(user);
   }
 
   @Get(':id')

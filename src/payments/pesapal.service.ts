@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
 export interface InitiatePaymentDto {
@@ -285,7 +286,13 @@ export class PesapalService {
       let status: 'pending' | 'successful' | 'failed' = 'pending';
 
       if (pesapalStatus.includes('completed') || pesapalStatus.includes('success')) {
-        status = 'successful';
+        const amountMatches =
+          result.amount !== undefined &&
+          new Prisma.Decimal(result.amount).eq(transaction.amount);
+        const currencyMatches =
+          typeof result.currency === 'string' &&
+          result.currency.toUpperCase() === transaction.currency;
+        status = amountMatches && currencyMatches ? 'successful' : 'failed';
       } else if (pesapalStatus.includes('failed') || pesapalStatus.includes('invalid')) {
         status = 'failed';
       }
@@ -297,6 +304,13 @@ export class PesapalService {
           status,
           verifiedAt: new Date(),
           paymentMethod: result.payment_method,
+          errorMessage:
+            pesapalStatus.includes('completed') ||
+            pesapalStatus.includes('success')
+              ? status === 'failed'
+                ? 'Provider verification amount or currency did not match the order'
+                : null
+              : undefined,
         },
       });
 
@@ -316,6 +330,24 @@ export class PesapalService {
         status: 'failed',
       };
     }
+  }
+
+  async findStoredTransaction(reference: string) {
+    return this.prisma.pesapalTransaction.findFirst({
+      where: {
+        OR: [{ orderTrackingId: reference }, { txRef: reference }],
+      },
+      select: {
+        id: true,
+        txRef: true,
+        orderTrackingId: true,
+        amount: true,
+        currency: true,
+        status: true,
+        metadata: true,
+        processedAt: true,
+      },
+    });
   }
 
   async getTransactionStatus(txRef: string): Promise<string> {

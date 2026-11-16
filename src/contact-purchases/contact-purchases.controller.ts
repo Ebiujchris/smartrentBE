@@ -1,6 +1,17 @@
-import { Controller, Post, Get, Body, Query, HttpCode } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  Query,
+  HttpCode,
+  UseGuards,
+} from '@nestjs/common';
 import { ContactPurchasesService } from './contact-purchases.service';
 import { PesapalService } from '../payments/pesapal.service';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
 
 @Controller('contact-purchases')
 export class ContactPurchasesController {
@@ -79,13 +90,12 @@ export class ContactPurchasesController {
     }
 
     // Create purchase record
-    const purchase = await this.service.createPurchase({
+    const purchase = await this.service.createVerifiedPurchase({
       listingId: dto.listingId,
       buyerPhone: dto.buyerPhone,
       buyerEmail: dto.buyerEmail,
       buyerName: dto.buyerName,
-      paymentMethod: 'PESAPAL',
-      transactionId: dto.orderTrackingId,
+      orderTrackingId: dto.orderTrackingId,
     });
 
     // Get contact info
@@ -99,18 +109,6 @@ export class ContactPurchasesController {
     };
   }
 
-  @Post('purchase')
-  async createPurchase(@Body() dto: {
-    listingId: string;
-    buyerPhone: string;
-    buyerEmail?: string;
-    buyerName?: string;
-    paymentMethod: string;
-    transactionId: string;
-  }) {
-    return this.service.createPurchase(dto);
-  }
-
   @Get('contact')
   async getContact(
     @Query('listingId') listingId: string,
@@ -120,6 +118,8 @@ export class ContactPurchasesController {
   }
 
   @Get('all')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
   async getAllPurchases() {
     return this.service.getAllPurchases();
   }
