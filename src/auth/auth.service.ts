@@ -87,10 +87,9 @@ export class AuthService {
       });
     } else {
       // Login with phone number
-      const cleanedPhone = identifier.replace(/\s+/g, '');
       user = await this.prisma.user.findFirst({
         where: {
-          phone: { in: [identifier, cleanedPhone] },
+          phone: { in: getPhoneLoginCandidates(identifier) },
           role: { in: ['LANDLORD', 'TENANT'] },
         },
         include: {
@@ -195,4 +194,31 @@ export class AuthService {
       },
     });
   }
+}
+
+function getPhoneLoginCandidates(identifier: string): string[] {
+  const digits = identifier.replace(/\D/g, '');
+  const candidates = new Set([
+    identifier,
+    identifier.replace(/\s+/g, ''),
+    digits,
+  ]);
+  let nationalNumber: string | undefined;
+
+  if (digits.startsWith('256') && digits.length === 12) {
+    nationalNumber = digits.slice(3);
+  } else if (digits.startsWith('0') && digits.length === 10) {
+    nationalNumber = digits.slice(1);
+  } else if (digits.length === 9) {
+    nationalNumber = digits;
+  }
+
+  if (nationalNumber) {
+    candidates.add(nationalNumber);
+    candidates.add(`0${nationalNumber}`);
+    candidates.add(`256${nationalNumber}`);
+    candidates.add(`+256${nationalNumber}`);
+  }
+
+  return [...candidates].filter(Boolean);
 }
